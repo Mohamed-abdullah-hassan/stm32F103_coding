@@ -1,0 +1,8 @@
+"./Src/LED.o"
+"./Src/main.o"
+"./Src/osKernel.o"
+"./Src/syscalls.o"
+"./Src/sysmem.o"
+"./Src/timebase.o"
+"./Src/uart.o"
+"./Startup/startup_stm32f103c8tx.o"
