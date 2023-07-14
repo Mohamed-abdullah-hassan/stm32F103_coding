@@ -36,7 +36,7 @@ void i2c1_Init()
 
 void i2c1_Write_Begin(uint8_t s_address, uint8_t data)
 {
-	volatile register uint8_t temp;
+//	volatile register uint8_t temp;
 	/*Set Start bit (bit 8) in CR1 */
 	/*to Generate a start condition*/
 	I2C1->CR1 |= (1 << 8ul);
@@ -61,7 +61,10 @@ void i2c1_Write_Begin(uint8_t s_address, uint8_t data)
 #else
 	;
 #endif
-	temp = I2C1->SR2;
+
+//	temp = I2C1->SR2;
+	s_address = I2C1->SR2; /* using any unused variable to read SR2 and prevent the compiler form issuing a warning*/
+
 #ifdef I2C_DEBUG_USING_LED
 	green_Off();
 #endif
@@ -79,7 +82,6 @@ void i2c1_Write_Begin(uint8_t s_address, uint8_t data)
 #ifdef I2C_DEBUG_USING_LED
 	red_Off();
 #endif
-
 
 	/*Return*/
 	return;

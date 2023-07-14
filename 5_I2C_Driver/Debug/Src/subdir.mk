@@ -8,24 +8,33 @@ C_SRCS += \
 ../Src/I2C.c \
 ../Src/LED.c \
 ../Src/main.c \
+../Src/ssd1306.c \
+../Src/ssd1306_test.c \
 ../Src/syscalls.c \
 ../Src/sysmem.c \
+../Src/time.c \
 ../Src/uart.c 
 
 OBJS += \
 ./Src/I2C.o \
 ./Src/LED.o \
 ./Src/main.o \
+./Src/ssd1306.o \
+./Src/ssd1306_test.o \
 ./Src/syscalls.o \
 ./Src/sysmem.o \
+./Src/time.o \
 ./Src/uart.o 
 
 C_DEPS += \
 ./Src/I2C.d \
 ./Src/LED.d \
 ./Src/main.d \
+./Src/ssd1306.d \
+./Src/ssd1306_test.d \
 ./Src/syscalls.d \
 ./Src/sysmem.d \
+./Src/time.d \
 ./Src/uart.d 
 
 
@@ -36,7 +45,7 @@ Src/%.o Src/%.su: ../Src/%.c Src/subdir.mk
 clean: clean-Src
 
 clean-Src:
-	-$(RM) ./Src/I2C.d ./Src/I2C.o ./Src/I2C.su ./Src/LED.d ./Src/LED.o ./Src/LED.su ./Src/main.d ./Src/main.o ./Src/main.su ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/uart.d ./Src/uart.o ./Src/uart.su
+	-$(RM) ./Src/I2C.d ./Src/I2C.o ./Src/I2C.su ./Src/LED.d ./Src/LED.o ./Src/LED.su ./Src/main.d ./Src/main.o ./Src/main.su ./Src/ssd1306.d ./Src/ssd1306.o ./Src/ssd1306.su ./Src/ssd1306_test.d ./Src/ssd1306_test.o ./Src/ssd1306_test.su ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/time.d ./Src/time.o ./Src/time.su ./Src/uart.d ./Src/uart.o ./Src/uart.su
 
 .PHONY: clean-Src
 
