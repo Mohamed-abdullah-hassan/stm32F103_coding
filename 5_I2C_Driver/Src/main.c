@@ -98,9 +98,16 @@ int main(void)
 //		SSD1306_CLEAR_FRAME;
 
 //		delay();
-
+//		ssd1306_I2C_Clear();
+		ssd1306_Fill_buffer(0x5f);
+		ssd1306_Draw_Bitmap2(0, 0, peugeot, 64, 64, ssd1306_pixel_XOR);
+		ssd1306_Write_Partial_Frame();
+		delay();
+		delay();
+		delay();
 		ssd1306_I2C_Clear();
 		/* End of SSD1306 Testing*/
+
 		delay();
 		delay();
 		red_On();

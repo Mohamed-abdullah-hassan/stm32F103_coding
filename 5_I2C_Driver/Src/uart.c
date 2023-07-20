@@ -28,5 +28,4 @@ void uart_Send(unsigned char c)
 {
 	while (!(USART1->SR & USART_SR_TC)); //wait for TX to be complete
 	USART1->DR = c;  //send it back out
-
 }

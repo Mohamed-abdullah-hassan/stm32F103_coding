@@ -3,6 +3,7 @@
 #include "ssd1306.h"
 #include "stdlib.h"
 #include "time.h"
+#include "stdint.h"
 
 void ssd1306_Test_Frame_Buffer()
 {
