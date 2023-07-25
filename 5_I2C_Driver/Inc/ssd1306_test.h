@@ -21,6 +21,9 @@ void ssd1306_Test_Draw_Line_V_1_1(void);
 void ssd1306_Test_Lines();
 void ssd1306_Test_Rect();
 void ssd1306_Test_Filled_Rect();
+void ssd1306_Test_Text( );
+void ssd1306_Test_Draw_Image();
+void ssd1306_Test_Draw_Image2();
 
 
 #endif /* SSD1306_TEST_H_ */

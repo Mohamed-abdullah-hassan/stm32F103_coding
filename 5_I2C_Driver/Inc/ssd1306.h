@@ -6,9 +6,9 @@
  */
 
 #ifndef SSD1306_H_
-#define SSD1306_H_
-
+#define SSD1306_H__
 #include "stdint.h"
+#include "font.h"
 
 #define SSD1306_Display_Height		64
 #define SSD1306_Display_Pages		SSD1306_Display_Height/8
@@ -32,8 +32,8 @@ typedef struct
 	uint8_t y_point;
 } ssd1306_point;
 
-static uint8_t ssd1306_Frame[SSD1306_Display_Pages * SSD1306_Display_Width];
-#define Frame_buffer	ssd1306_Frame
+//static uint8_t ssd1306_Frame[SSD1306_Display_Pages * SSD1306_Display_Width];
+//#define Frame_buffer	ssd1306_Frame
 #define check_buffer_size	256
 
 //typedef struct
@@ -47,8 +47,10 @@ static uint8_t ssd1306_Frame[SSD1306_Display_Pages * SSD1306_Display_Width];
 
 void ssd1306_I2C_Init( );
 void ssd1306_Clear_Frame( );
+void ssd1306_Reset_boundaries();
 void ssd1306_I2C_Write(uint8_t address , uint8_t reg , uint8_t data );
-void ssd1306_I2C_Write_Frame( );
+//void ssd1306_I2C_Write_Frame( );
+void ssd1306_Directframe_Set(uint16_t indx, uint8_t data);
 void ssd1306_I2C_Clear(void );
 void ssd1306_I2C_Set(void );
 void ssd1306_I2C_Fill(uint8_t pattern );
@@ -70,5 +72,9 @@ void ssd1306_Draw_Bitmap2(uint8_t x_start , uint8_t y_start , const uint8_t *ima
         uint8_t height, ssd1306_pixel_op operation );
 void ssd1306_Fill_buffer(uint8_t pattern );
 void ssd1306_Write_Partial_Frame( );
+
+void ssd1306_Set_Cursor(uint8_t xPos, uint8_t yPos);
+void ssd1306_Set_Font(fontHead_t *newFont);
+void ssd1306_PutC(char c);
 
 #endif /* SSD1306_H_ */

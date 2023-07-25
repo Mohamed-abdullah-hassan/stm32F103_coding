@@ -1,5 +1,6 @@
 "./Src/I2C.o"
 "./Src/LED.o"
+"./Src/font.o"
 "./Src/main.o"
 "./Src/ssd1306.o"
 "./Src/ssd1306_test.o"

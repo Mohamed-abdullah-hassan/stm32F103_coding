@@ -4,171 +4,177 @@
 #include "stdlib.h"
 #include "time.h"
 #include "stdint.h"
+#include "font.h"
+#include <stdio.h>
+#include "icon_peugeot.h"
 
 void ssd1306_Test_Frame_Buffer()
 {
 	uint8_t m = 0;
 	m = 0;
 	for (uint8_t i = 0; i < 32; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = 32; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x0F;
+		ssd1306_Directframe_Set(i + m * 128, 0x0F);
 	for (uint8_t i = (64); i < 96; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = 96; i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xF0;
+		ssd1306_Directframe_Set(i + m * 128, 0xF0);
 	m++;
 	for (uint8_t i = 0; i < 32; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = 32; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 96; i++)
-		ssd1306_Frame[i + m * 128] = 0xAA;
+		ssd1306_Directframe_Set(i + m * 128, 0xAA);
 	for (uint8_t i = 96; i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x55;
+		ssd1306_Directframe_Set(i + m * 128, 0x55);
 	m++;
 	for (uint8_t i = 0; i < 32; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = 32; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x5C;
+		ssd1306_Directframe_Set(i + m * 128, 0x5C);
 	for (uint8_t i = (64); i < 96; i++)
-		ssd1306_Frame[i + m * 128] = 0xC5;
+		ssd1306_Directframe_Set(i + m * 128, 0xC5);
 	for (uint8_t i = 96; i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	m++;
 	for (uint8_t i = 0; i < 32; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = 32; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 96; i++)
-		ssd1306_Frame[i + m * 128] = 0xAA;
+		ssd1306_Directframe_Set(i + m * 128, 0xAA);
 	for (uint8_t i = 96; i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x55;
+		ssd1306_Directframe_Set(i + m * 128, 0x55);
 	m++;
 	for (uint8_t i = 0; i < 32; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = 32; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x0F;
+		ssd1306_Directframe_Set(i + m * 128, 0x0F);
 	for (uint8_t i = (64); i < 96; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = 96; i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xF0;
+		ssd1306_Directframe_Set(i + m * 128, 0xF0);
 	m++;
 	for (uint8_t i = 0; i < 32; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = 32; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 96; i++)
-		ssd1306_Frame[i + m * 128] = 0xAA;
+		ssd1306_Directframe_Set(i + m * 128, 0xAA);
 	for (uint8_t i = 96; i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x55;
+		ssd1306_Directframe_Set(i + m * 128, 0x55);
 	m++;
 	for (uint8_t i = 0; i < 32; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = 32; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x5C;
+		ssd1306_Directframe_Set(i + m * 128, 0x5C);
 	for (uint8_t i = (64); i < 96; i++)
-		ssd1306_Frame[i + m * 128] = 0xC5;
+		ssd1306_Directframe_Set(i + m * 128, 0xC5);
 	for (uint8_t i = 96; i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	m++;
 	for (uint8_t i = 0; i < 32; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = 32; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 96; i++)
-		ssd1306_Frame[i + m * 128] = 0xAA;
+		ssd1306_Directframe_Set(i + m * 128, 0xAA);
 	for (uint8_t i = 96; i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x55;
+		ssd1306_Directframe_Set(i + m * 128, 0x55);
 
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay();
 
 	m = 0;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x00;
+		ssd1306_Directframe_Set(i + m * 128, 0x00);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x00;
+		ssd1306_Directframe_Set(i + m * 128, 0x00);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x00;
+		ssd1306_Directframe_Set(i + m * 128, 0x00);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x00;
+		ssd1306_Directframe_Set(i + m * 128, 0x00);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x0;
+		ssd1306_Directframe_Set(i + m * 128, 0x0);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x0;
+		ssd1306_Directframe_Set(i + m * 128, 0x0);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x0;
+		ssd1306_Directframe_Set(i + m * 128, 0x00);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x0;
-	ssd1306_I2C_Write_Frame();
+		ssd1306_Directframe_Set(i + m * 128, 0x00);
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay();
 
 	m = 0;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x0;
+		ssd1306_Directframe_Set(i + m * 128, 0x00);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x0;
+		ssd1306_Directframe_Set(i + m * 128, 0x0);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x0;
+		ssd1306_Directframe_Set(i + m * 128, 0x0);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0x0;
+		ssd1306_Directframe_Set(i + m * 128, 0x0);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x00;
+		ssd1306_Directframe_Set(i + m * 128, 0x00);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x00;
+		ssd1306_Directframe_Set(i + m * 128, 0x00);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x00;
+		ssd1306_Directframe_Set(i + m * 128, 0x00);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 	m++;
 	for (uint8_t i = 0; i < 64; i++)
-		ssd1306_Frame[i + m * 128] = 0x00;
+		ssd1306_Directframe_Set(i + m * 128, 0x00);
 	for (uint8_t i = (64); i < 128; i++)
-		ssd1306_Frame[i + m * 128] = 0xFF;
+		ssd1306_Directframe_Set(i + m * 128, 0xFF);
 
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay();
 }
 
@@ -190,7 +196,8 @@ void ssd1306_Test_Draw_Pixel_2()
 		ssd1306_Draw_Pixel((uint8_t) 64 - (i / 4), (uint8_t) 32 - (i / 4),
 				ssd1306_color_White);
 	}
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay();
 }
 
@@ -218,19 +225,24 @@ void ssd1306_Test_Draw_Line_H_1()
 //	uint8_t m = 0;
 	ssd1306_Clear_Frame();
 	ssd1306_Draw_Line_H(0, 0, 128, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	//				delay();
 	ssd1306_Draw_Line_H(0, 63, 128, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	//				delay();
 	ssd1306_Draw_Line_H(64, 30, 30, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	//				delay();
 	ssd1306_Draw_Line_H(32, 15, 128, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	//				delay();
 	ssd1306_Draw_Line_H(120, 55, 50, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay();
 }
 
@@ -242,16 +254,18 @@ void ssd1306_Test_Draw_Line_H_2()
 	{
 		ssd1306_Draw_Line_H(0, m / 2, m, ssd1306_color_White);
 	}
-	ssd1306_I2C_Write_Frame();
-	//		delay();
-	//		delay();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
+	delay();
 	delay();
 	ssd1306_Clear_Frame();
+
 	for (m = 0; m < 128; m++)
 	{
 		ssd1306_Draw_Line_H(127 - m, m / 2, m, ssd1306_color_White);
 	}
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 
 	//		delay();
 	//		delay();
@@ -261,7 +275,8 @@ void ssd1306_Test_Draw_Line_H_2()
 	{
 		ssd1306_Draw_Line_H(0, m / 2, 127 - m, ssd1306_color_White);
 	}
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	//				delay();
 	delay();
 	ssd1306_Clear_Frame();
@@ -269,7 +284,8 @@ void ssd1306_Test_Draw_Line_H_2()
 	{
 		ssd1306_Draw_Line_H(m, m / 2, 127 - m, ssd1306_color_White);
 	}
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay();
 }
 
@@ -291,13 +307,16 @@ void ssd1306_Test_Draw_Line_H_3(void)
 				x = 0;
 				offset += 31;
 				ssd1306_Draw_Line_V(offset - 2, 0, 64, ssd1306_color_White);
+				ssd1306_Write_Partial_Frame();
 			}
 		}
 		x++;
 		ssd1306_Draw_Line_H(offset, x, 28, ssd1306_color_White);
 		x++;
 	}
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
+	delay2();
 }
 
 void ssd1306_Test_Draw_Line_V_1(void)
@@ -310,7 +329,8 @@ void ssd1306_Test_Draw_Line_V_1(void)
 	ssd1306_Draw_Line_V(0, 0, 63, ssd1306_color_White);
 	ssd1306_Draw_Line_V(127, 0, 63, ssd1306_color_White);
 
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 //	delay();
 //	delay();
 	delay();
@@ -320,7 +340,8 @@ void ssd1306_Test_Draw_Line_V_1(void)
 	ssd1306_Draw_Line_H(32, 16 + 32, 64, ssd1306_color_White);
 	ssd1306_Draw_Line_V(32 + 64, 16, 32, ssd1306_color_White);
 
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay();
 }
 void ssd1306_Test_Draw_Line_V_1_1(void)
@@ -333,7 +354,8 @@ void ssd1306_Test_Draw_Line_V_1_1(void)
 //	ssd1306_Draw_Line_V(0, 0, 63, ssd1306_color_Black);
 //	ssd1306_Draw_Line_V(127, 0, 63, ssd1306_color_Black);
 
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 //	delay();
 //	delay();
 //	delay();
@@ -343,7 +365,8 @@ void ssd1306_Test_Draw_Line_V_1_1(void)
 	ssd1306_Draw_Line_H(32, 16 + 32, 64, ssd1306_color_Black);
 	ssd1306_Draw_Line_V(32 + 64, 16, 32, ssd1306_color_Black);
 
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay();
 }
 
@@ -369,7 +392,9 @@ void ssd1306_Test_Draw_Line_V_2(void)
 		ssd1306_Draw_Line_V(++x, offset, 30, ssd1306_color_White);
 		x++;
 	}
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
+	delay2();
 }
 
 void ssd1306_Test_Lines_2()
@@ -464,9 +489,11 @@ void ssd1306_Test_Lines()
 	uint8_t x1, y1, x2, y2;
 
 	ssd1306_Clear_Frame();
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	ssd1306_Draw_Direct_Rectangle(18, 8, 110, 56, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 
 	x1 = SSD1306_Display_Width / 2;
 	y1 = SSD1306_Display_Height / 2;
@@ -474,7 +501,8 @@ void ssd1306_Test_Lines()
 	for (x2 = 20; x2 <= (SSD1306_Display_Width - 20); x2 += 4)
 	{
 		ssd1306_Draw_Line(x1, y1, x2, y2, ssd1306_color_White);
-		ssd1306_I2C_Write_Frame();
+//		ssd1306_I2C_Write_Frame();
+		ssd1306_Write_Partial_Frame();
 		delay4();
 	}
 	x2 -= 4;
@@ -482,7 +510,8 @@ void ssd1306_Test_Lines()
 	for (y2 = 10; y2 <= (SSD1306_Display_Height - 10); y2 += 4)
 	{
 		ssd1306_Draw_Line(x1, y1, x2, y2, ssd1306_color_White);
-		ssd1306_I2C_Write_Frame();
+//		ssd1306_I2C_Write_Frame();
+		ssd1306_Write_Partial_Frame();
 		delay4();
 	}
 	y2 -= 4;
@@ -491,7 +520,8 @@ void ssd1306_Test_Lines()
 	for (; x2 >= 20; x2 -= 4)
 	{
 		ssd1306_Draw_Line(x1, y1, x2, y2, ssd1306_color_White);
-		ssd1306_I2C_Write_Frame();
+//		ssd1306_I2C_Write_Frame();
+		ssd1306_Write_Partial_Frame();
 		delay4();
 	}
 	x2 += 4;
@@ -500,25 +530,32 @@ void ssd1306_Test_Lines()
 	for (; y2 >= 10; y2 -= 4)
 	{
 		ssd1306_Draw_Line(x1, y1, x2, y2, ssd1306_color_White);
-		ssd1306_I2C_Write_Frame();
+//		ssd1306_I2C_Write_Frame();
+		ssd1306_Write_Partial_Frame();
 		delay4();
 	}
+	delay();
 }
 void ssd1306_Test_Rect()
 {
 	ssd1306_Clear_Frame();
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	ssd1306_Draw_Direct_Rectangle(16, 8, 80, 40, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay2();
 	ssd1306_Draw_Direct_Rectangle(0, 0, 63, 31, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay2();
 	ssd1306_Draw_Direct_Rectangle(63, 31, 130, 80, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay2();
 	ssd1306_Draw_Direct_Rectangle(5, 60, 250, 255, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay2();
 	ssd1306_point p0, p1, p2, p3;
 	p0.x_point = 63;
@@ -531,28 +568,150 @@ void ssd1306_Test_Rect()
 	p3.y_point = 31;
 
 	ssd1306_Draw_Rectangle(p0, p1, p2, p3, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay();
 	ssd1306_Clear_Frame();
 	volatile double tt = sqrt(121);
 	p0.x_point = (uint8_t) tt;
 	p0.y_point = (uint8_t) tt;
 	ssd1306_Draw_Rectangle(p0, p1, p2, p3, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay2();
 }
 
 void ssd1306_Test_Filled_Rect()
 {
 	ssd1306_Clear_Frame();
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	ssd1306_Draw_Recangle_Filled(20, 10, 64, 55, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay();
 	ssd1306_Draw_Recangle_Filled(66, 5, 255, 120, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
 	delay();
 	ssd1306_Draw_Recangle_Filled(127, 64, 0, 0, ssd1306_color_White);
-	ssd1306_I2C_Write_Frame();
+//	ssd1306_I2C_Write_Frame();
+	ssd1306_Write_Partial_Frame();
+	delay2();
+}
+
+void ssd1306_Test_Text( )
+{
+	ssd1306_Clear_Frame();
+	ssd1306_Set_Cursor(0, 0);
+	ssd1306_Set_Font(&font_5x7);
+	printf("Greetings, From STM32F301C8 MCU\n");
+	ssd1306_Write_Partial_Frame();
+	delay2();
+	ssd1306_Set_Font(&font_7x10);
+	ssd1306_PutC('H');
+	ssd1306_PutC('e');
+	ssd1306_PutC('l');
+	ssd1306_PutC('l');
+	ssd1306_PutC('o');
+	ssd1306_PutC(',');
+	ssd1306_PutC(' ');
+	ssd1306_PutC('W');
+	ssd1306_PutC('o');
+	ssd1306_PutC('r');
+	ssd1306_PutC('l');
+	ssd1306_PutC('d');
+	ssd1306_PutC('!');
+	ssd1306_Write_Partial_Frame();
+	delay();
+	ssd1306_Clear_Frame();
+	ssd1306_Set_Cursor(0, 0);
+	ssd1306_Set_Font(&font_5x7);
+	for (uint8_t c = ' '; c <= (' ' + font_5x7.count); c++)
+	{
+		ssd1306_PutC(c);
+		ssd1306_Write_Partial_Frame();
+	}
+	delay();
+	delay();
+	delay();
+	delay();
+	ssd1306_Clear_Frame();
+	ssd1306_Set_Cursor(0, 0);
+	ssd1306_Set_Font(&font_7x10);
+	for (uint8_t c = ' '; c <= '~'; c++)
+	{
+		ssd1306_PutC(c);
+		ssd1306_Write_Partial_Frame();
+	}
+	delay();
+	ssd1306_Set_Font(&font_11x18);
+	for (uint8_t c = ' '; c <= '~'; c++)
+	{
+		if (((c - ' ') % 33) == 0)
+		{
+			ssd1306_Clear_Frame();
+			ssd1306_Set_Cursor(0, 0);
+			delay2();
+		}
+		ssd1306_PutC(c);
+		ssd1306_Write_Partial_Frame();
+	}
+	delay2();
+	ssd1306_Set_Font(&font_16x26);
+	for (uint8_t c = ' '; c <= '~'; c++)
+	{
+		if (((c - ' ') % 14) == 0)
+		{
+			ssd1306_Clear_Frame();
+			ssd1306_Set_Cursor(0, 0);
+			delay2();
+		}
+		ssd1306_PutC(c);
+		ssd1306_Write_Partial_Frame();
+	}
+	delay2();
+//	ssd1306_Clear_Frame();
+//	ssd1306_Set_Cursor(0, 0);
+//	printf("16:08:28\n");
+//	ssd1306_Write_Partial_Frame();
+//	delay();
+
+}
+
+void ssd1306_Test_Draw_Image()
+{
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Bitmap(32, 0, peugeot, 64, 64);
+	ssd1306_Write_Partial_Frame();
+	delay();
+}
+
+
+void ssd1306_Test_Draw_Image2()
+{
+	ssd1306_Set_Cursor(0, 0);
+	ssd1306_Set_Font(&font_5x7);
+	for(int i =0; i< 24;i++)
+	{
+	ssd1306_PutC('P');
+	ssd1306_PutC('e');
+	ssd1306_PutC('u');
+	ssd1306_PutC('g');
+	ssd1306_PutC('e');
+	ssd1306_PutC('o');
+	ssd1306_PutC('t');
+	ssd1306_Write_Partial_Frame();
+	delay2();
+	}
+	ssd1306_Write_Partial_Frame();
+	delay();
+	delay();
+//	delay();
+//	ssd1306_Reset_boundaries();
+	ssd1306_Draw_Bitmap2(0, 0, peugeot, 64, 64, ssd1306_pixel_XOR);
+	ssd1306_Draw_Bitmap2(64, 0, peugeot, 64, 64, ssd1306_pixel_AND);
+	ssd1306_Write_Partial_Frame();
+	delay();
 	delay();
 }
