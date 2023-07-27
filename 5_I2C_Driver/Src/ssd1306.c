@@ -54,7 +54,7 @@ const uint8_t ssd1306_init[] =
 	  (0x10),     //---set high column address 0x10
 	  (0x40),     //--set start line address
 	  (0x81),     //--set contrast control register
-	  (0x05),     // Contrast Value from 0x00 to 0xFF
+	  (0x01),     // Contrast Value from 0x00 to 0xFF
 	  (0xA1),     //--set segment re-map 0 to 127
 	  (0xA6),     //--set normal display
 	  (0xA8),     //--set multiplex ratio(1 to 64)
@@ -691,25 +691,239 @@ void ssd1306_PutC(char c )
 
 }
 
+void ssd1306_PutSTR(char *str)
+{
+	while (*str) // Every string has NULL character at the end
+	{
+		ssd1306_PutC(*str++);
+	}
+}
+
+void ssd1306_Draw_Circle(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius, ssd1306_color_t color, ssd1306_circle_corners corner)
+{
+
+	int16_t f = 1 - radius;
+	int16_t ddF_x = 1;
+	int16_t ddF_y = -2 * radius;
+	int16_t x = 0;
+	int16_t y = radius;
+
+	if ((corner & ssd1306_circle_half_hor_top))
+	    ssd1306_Pixel_Set(x_Pos, y_Pos - radius, ssd1306_pixel_Set, color);
+
+	if ((corner & ssd1306_circle_half_ver_right))
+	    ssd1306_Pixel_Set(x_Pos + radius, y_Pos, ssd1306_pixel_Set, color);
+
+	if ((corner & ssd1306_circle_half_ver_left))
+	    ssd1306_Pixel_Set(x_Pos - radius, y_Pos, ssd1306_pixel_Set, color);
+
+	if ((corner & ssd1306_circle_half_hor_bot))
+	    ssd1306_Pixel_Set(x_Pos, y_Pos + radius, ssd1306_pixel_Set, color);
 
 
-//char SSD1306_Puts(char *str, FontDef_t *Font, SSD1306_COLOR_t color)
-//{
-//	/* Write characters */
-//	while (*str)
-//	{
-//		/* Write character by character */
-//		if (SSD1306_Putc(*str, Font, color) != *str)
-//		{
-//			/* Return error */
-//			return *str;
-//		}
-//
-//		/* Increase string pointer */
-//		str++;
-//	}
-//
-//	/* Everything OK, zero should be returned */
-//	return *str;
-//}
+	while (x < y)
+	{
+		if (f >= 0)
+		{
+			y--;
+			ddF_y += 2;
+			f += ddF_y;
+		}
+		x++;
+		ddF_x += 2;
+		f += ddF_x;
 
+		if (corner & ssd1306_circle_quarter_bot_Left)
+		{
+			ssd1306_Pixel_Set(x_Pos - x, y_Pos + y, ssd1306_pixel_Set, color);     //right bot
+//			ssd1306_Write_Partial_Frame();
+//			delay2();
+			ssd1306_Pixel_Set(x_Pos - y, y_Pos + x, ssd1306_pixel_Set, color);     // left bot
+//			ssd1306_Write_Partial_Frame();
+//							delay2();
+		}
+		if (corner & ssd1306_circle_quarter_bot_right)
+		{
+			ssd1306_Pixel_Set(x_Pos + x, y_Pos + y, ssd1306_pixel_Set, color);     //left bot
+			ssd1306_Pixel_Set(x_Pos + y, y_Pos + x, ssd1306_pixel_Set, color);     // right bot
+		}
+		if (corner & ssd1306_circle_quarter_top_left)
+		{
+			ssd1306_Pixel_Set(x_Pos - y, y_Pos - x, ssd1306_pixel_Set, color);     // left top
+			ssd1306_Pixel_Set(x_Pos - x, y_Pos - y, ssd1306_pixel_Set, color);     //right top
+		}
+		if (corner & ssd1306_circle_quarter_top_right)
+		{
+			ssd1306_Pixel_Set(x_Pos + x, y_Pos - y, ssd1306_pixel_Set, color);     //left top
+			ssd1306_Pixel_Set(x_Pos + y, y_Pos - x, ssd1306_pixel_Set, color);     // right top
+		}
+	}
+}
+void ssd1306_Draw_Circle_Filled(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius, ssd1306_color_t color, ssd1306_circle_corners corner)
+{
+	int16_t f = 1 - radius;
+	int16_t ddF_x = 1;
+	int16_t ddF_y = -2 * radius;
+	int16_t x = 0;
+	int16_t y = radius;
+
+	if ((corner & ssd1306_circle_half_hor_top))
+	    ssd1306_Draw_Line_V(x_Pos, y_Pos - radius, radius, color);
+
+	if ((corner & ssd1306_circle_half_ver_right)) ssd1306_Draw_Line_H(x_Pos, y_Pos, radius, color);
+
+	if ((corner & ssd1306_circle_half_ver_left))
+	    ssd1306_Draw_Line_H(x_Pos - radius, y_Pos, radius, color);
+
+	if ((corner & ssd1306_circle_half_hor_bot)) ssd1306_Draw_Line_V(x_Pos, y_Pos, radius, color);
+
+	while (x < y)
+	{
+		if (f >= 0)
+		{
+			y--;
+			ddF_y += 2;
+			f += ddF_y;
+		}
+		x++;
+		ddF_x += 2;
+		f += ddF_x;
+
+		if (corner & ssd1306_circle_quarter_bot_Left)
+		{
+//			ssd1306_Pixel_Set(x_Pos - x, y_Pos + y, ssd1306_pixel_Set, color);     //right bot
+//			ssd1306_Pixel_Set(x_Pos - y, y_Pos + x, ssd1306_pixel_Set, color);     // left bot
+//			ssd1306_Write_Partial_Frame();
+//			delay2();
+			ssd1306_Draw_Line_V(x_Pos - x, y_Pos, y + 1, color);
+			ssd1306_Draw_Line_V(x_Pos - y, y_Pos, x + 1, color);
+//				ssd1306_Write_Partial_Frame();
+//				delay2();
+
+		}
+		if (corner & ssd1306_circle_quarter_bot_right)
+		{
+			ssd1306_Draw_Line_V(x_Pos + x, y_Pos, y + 1, color);
+			ssd1306_Draw_Line_V(x_Pos + y, y_Pos, x + 1, color);
+//				ssd1306_Pixel_Set(x_Pos + x, y_Pos + y, ssd1306_pixel_Set, color);     //left bot
+//				ssd1306_Pixel_Set(x_Pos + y, y_Pos + x, ssd1306_pixel_Set, color);     // right bot
+		}
+		if (corner & ssd1306_circle_quarter_top_left)
+		{
+			ssd1306_Draw_Line_V(x_Pos - y, y_Pos - x, x + 1, color);
+			ssd1306_Draw_Line_V(x_Pos - x, y_Pos - y, y + 1, color);
+//				ssd1306_Pixel_Set(x_Pos - y, y_Pos - x, ssd1306_pixel_Set, color);     // left top
+//				ssd1306_Pixel_Set(x_Pos - x, y_Pos - y, ssd1306_pixel_Set, color);     //right top
+		}
+		if (corner & ssd1306_circle_quarter_top_right)
+		{
+			ssd1306_Draw_Line_V(x_Pos + x, y_Pos - y, y + 1, color);
+			ssd1306_Draw_Line_V(x_Pos + y, y_Pos - x, x + 1, color);
+//				ssd1306_Pixel_Set(x_Pos + x, y_Pos - y, ssd1306_pixel_Set, color);     //left top
+//				ssd1306_Pixel_Set(x_Pos + y, y_Pos - x, ssd1306_pixel_Set, color);     // right top
+		}
+	}
+}
+
+void ssd1306_Draw_Rect_Round(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_t height, uint8_t radius, ssd1306_circle_corners corners, ssd1306_color_t color )
+{
+	uint8_t x1,x2,x3,x4,y1,y2,y3,y4;
+	x1 = x2 = x_Pos;
+	x3 = x4 = x_Pos + width;
+	y1 = y2 = y_Pos;
+	y3 = y4 = y_Pos + height;
+	if(corners & ssd1306_circle_quarter_top_left)
+	{
+		x1 += radius;
+		y1 += radius;
+		ssd1306_Draw_Circle(x1, y1, radius, color, ssd1306_circle_quarter_top_left);
+	}
+	if(corners & ssd1306_circle_quarter_top_right)
+	{
+		x3 -= radius;
+		y2 += radius;
+		ssd1306_Draw_Circle(x3, y2, radius, color, ssd1306_circle_quarter_top_right);
+	}
+	if(corners & ssd1306_circle_quarter_bot_Left)
+	{
+		x2 += radius;
+		y3 -= radius;
+		ssd1306_Draw_Circle(x2, y3, radius, color, ssd1306_circle_quarter_bot_Left);
+	}
+	if(corners & ssd1306_circle_quarter_bot_right)
+	{
+		x4 -= radius;
+		y4 -= radius;
+		ssd1306_Draw_Circle(x4, y4, radius, color,ssd1306_circle_quarter_bot_right);
+	}
+
+	ssd1306_Draw_Line_H(x1, y_Pos, (x3 - x1), color);
+	ssd1306_Draw_Line_V(x_Pos, y1, (y3 - y1), color);
+	ssd1306_Draw_Line_H(x2, y_Pos+ height, (x4 - x2), color);
+	ssd1306_Draw_Line_V(x_Pos + width, y2, (y4 - y2), color);
+
+}
+
+void ssd1306_Draw_Rect_Round_filled(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_t height, uint8_t radius, ssd1306_circle_corners corners, ssd1306_color_t color )
+{
+//	if(width < (2 * radius)) radius = width >>1;
+//	if (height < (2* radius)) radius = height >>1;
+	if(width < (2 * radius)) return;
+	if (height < (2* radius)) return;
+	uint8_t x1,x2,x3,x4,y1,y2,y3,y4;
+	x1 = x2 = x_Pos;
+	x3 = x4 = x_Pos + width;
+	y1 = y2 = y_Pos;
+	y3 = y4 = y_Pos + height;
+	if(corners & ssd1306_circle_quarter_top_left)
+	{
+		x1 += radius;
+		y1 += radius;
+		ssd1306_Draw_Circle_Filled(x1, y1, radius, color, ssd1306_circle_quarter_top_left);
+	}
+	if(corners & ssd1306_circle_quarter_top_right)
+	{
+		x3 -= radius;
+		y2 += radius;
+		ssd1306_Draw_Circle_Filled(x3, y2, radius, color, ssd1306_circle_quarter_top_right);
+	}
+	if(corners & ssd1306_circle_quarter_bot_Left)
+	{
+		x2 += radius;
+		y3 -= radius;
+		ssd1306_Draw_Circle_Filled(x2, y3, radius, color, ssd1306_circle_quarter_bot_Left);
+	}
+	if(corners & ssd1306_circle_quarter_bot_right)
+	{
+		x4 -= radius;
+		y4 -= radius;
+		ssd1306_Draw_Circle_Filled(x4, y4, radius, color,ssd1306_circle_quarter_bot_right);
+	}
+
+	uint8_t x_temp=0, y_temp=0;
+	if(y2 >= y1)	y_temp = y2;
+	else y_temp = y1;
+	ssd1306_Draw_Recangle_Filled(x1, y_Pos, x3, y_temp, color);
+
+	if(x2 >= x1) x_temp = x2;
+	else x_temp = x1;
+	ssd1306_Draw_Recangle_Filled(x_Pos, y1, x_temp, y3, color);
+
+	if(x4 >= x3) x_temp = x3;
+	else x_temp = x4;
+	ssd1306_Draw_Recangle_Filled(x_temp, y2, x_Pos + width, y4, color);
+
+	if(y4 >= y3)	y_temp = y3;
+	else y_temp = y4;
+	ssd1306_Draw_Recangle_Filled(x2, y_temp, x4, y_Pos + height, color);
+
+	if(y2 >= y1)	y_temp = y1;
+	else y_temp = y2;
+	if(x1 >= x2) x_temp = x1;
+	else x_temp = x2;
+	if(x3 < x4) x4 = x3;
+	if(y4 > y3)	y4 = y3;
+
+	ssd1306_Draw_Recangle_Filled(x_temp, y_temp, x4, y4, color);
+
+}

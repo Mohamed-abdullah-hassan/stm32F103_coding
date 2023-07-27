@@ -43,19 +43,14 @@ int main(void )
 	/*Start Toggling some LEDs*/
 	red_On();
 	green_On();
-	delay();
+	delay2();
 	green_Off();
-	delay();
+	delay2();
 
 	/*Initialize OLED display SSD1306*/
 	ssd1306_I2C_Init();
 
-	blue_On();
-	delay();
-	ssd1306_I2C_Set();
-
 	ssd1306_I2C_Clear();
-	blue_Off();
 
 	while (1)
 	{
@@ -72,8 +67,13 @@ int main(void )
 		blue_Off();
 		/* SSD1306 Testing */
 		ssd1306_Test_Text();
+		ssd1306_Test_ProgressBar();
+		ssd1306_Test_round_rect();
+		ssd1306_Test__filled_round_rect();
 		ssd1306_Test_Draw_Image();
-		ssd1306_Test_Draw_Image2();
+//		ssd1306_Test_Draw_Image2();
+		ssd1306_test_circle();
+		ssd1306_Test_Filled_Circle();
 
 //		ssd1306_Clear_Frame();
 //		ssd1306_Test_Fill();
@@ -87,7 +87,7 @@ int main(void )
 		ssd1306_Test_Draw_Line_H_3();
 		ssd1306_Test_Lines();
 		ssd1306_Test_Rect();
-		ssd1306_Test_Filled_Rect();
+//		ssd1306_Test_Filled_Rect();
 		ssd1306_I2C_Clear();
 		/* End of SSD1306 Testing*/
 

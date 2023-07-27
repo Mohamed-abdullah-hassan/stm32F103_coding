@@ -24,6 +24,11 @@ void ssd1306_Test_Filled_Rect();
 void ssd1306_Test_Text( );
 void ssd1306_Test_Draw_Image();
 void ssd1306_Test_Draw_Image2();
+void ssd1306_test_circle();
+void ssd1306_Test_Filled_Circle();
+void ssd1306_Test_round_rect();
+void ssd1306_Test__filled_round_rect();
+void ssd1306_Test_ProgressBar();
 
 
 #endif /* SSD1306_TEST_H_ */

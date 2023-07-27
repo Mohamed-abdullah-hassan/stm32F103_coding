@@ -7,6 +7,7 @@
 #include "font.h"
 #include <stdio.h>
 #include "icon_peugeot.h"
+#include <stdlib.h>
 
 void ssd1306_Test_Frame_Buffer()
 {
@@ -584,20 +585,17 @@ void ssd1306_Test_Rect()
 void ssd1306_Test_Filled_Rect()
 {
 	ssd1306_Clear_Frame();
-//	ssd1306_I2C_Write_Frame();
-	ssd1306_Write_Partial_Frame();
+//	ssd1306_Write_Partial_Frame();
 	ssd1306_Draw_Recangle_Filled(20, 10, 64, 55, ssd1306_color_White);
-//	ssd1306_I2C_Write_Frame();
 	ssd1306_Write_Partial_Frame();
-	delay();
+	delay3();
 	ssd1306_Draw_Recangle_Filled(66, 5, 255, 120, ssd1306_color_White);
-//	ssd1306_I2C_Write_Frame();
-	ssd1306_Write_Partial_Frame();
-	delay();
-	ssd1306_Draw_Recangle_Filled(127, 64, 0, 0, ssd1306_color_White);
-//	ssd1306_I2C_Write_Frame();
 	ssd1306_Write_Partial_Frame();
 	delay2();
+//	ssd1306_Draw_Recangle_Filled(127, 64, 0, 0, ssd1306_color_White);
+////	ssd1306_I2C_Write_Frame();
+//	ssd1306_Write_Partial_Frame();
+//	delay2();
 }
 
 void ssd1306_Test_Text( )
@@ -605,78 +603,65 @@ void ssd1306_Test_Text( )
 	ssd1306_Clear_Frame();
 	ssd1306_Set_Cursor(0, 0);
 	ssd1306_Set_Font(&font_5x7);
-	printf("Greetings, From STM32F301C8 MCU\n");
+	ssd1306_PutSTR("Greetings, From STM32F301C8 MCU\n");
 	ssd1306_Write_Partial_Frame();
 	delay2();
 	ssd1306_Set_Font(&font_7x10);
-	ssd1306_PutC('H');
-	ssd1306_PutC('e');
-	ssd1306_PutC('l');
-	ssd1306_PutC('l');
-	ssd1306_PutC('o');
-	ssd1306_PutC(',');
-	ssd1306_PutC(' ');
-	ssd1306_PutC('W');
-	ssd1306_PutC('o');
-	ssd1306_PutC('r');
-	ssd1306_PutC('l');
-	ssd1306_PutC('d');
-	ssd1306_PutC('!');
+	ssd1306_PutSTR("Hello, World!");
 	ssd1306_Write_Partial_Frame();
 	delay();
 	ssd1306_Clear_Frame();
 	ssd1306_Set_Cursor(0, 0);
 	ssd1306_Set_Font(&font_5x7);
-	for (uint8_t c = ' '; c <= (' ' + font_5x7.count); c++)
-	{
-		ssd1306_PutC(c);
-		ssd1306_Write_Partial_Frame();
-	}
-	delay();
-	delay();
-	delay();
+	ssd1306_PutSTR("Hello!");
+//	for (uint8_t c = ' '; c <= (' ' + font_5x7.count); c++)
+//	{
+//		ssd1306_PutC(c);
+//	}
+	ssd1306_Write_Partial_Frame();
 	delay();
 	ssd1306_Clear_Frame();
 	ssd1306_Set_Cursor(0, 0);
 	ssd1306_Set_Font(&font_7x10);
-	for (uint8_t c = ' '; c <= '~'; c++)
-	{
-		ssd1306_PutC(c);
-		ssd1306_Write_Partial_Frame();
-	}
+	ssd1306_PutSTR("Hello!");
+//	for (uint8_t c = ' '; c <= '~'; c++)
+//	{
+//		ssd1306_PutC(c);
+//	}
+	ssd1306_Write_Partial_Frame();
 	delay();
 	ssd1306_Set_Font(&font_11x18);
-	for (uint8_t c = ' '; c <= '~'; c++)
-	{
-		if (((c - ' ') % 33) == 0)
-		{
-			ssd1306_Clear_Frame();
-			ssd1306_Set_Cursor(0, 0);
-			delay2();
-		}
-		ssd1306_PutC(c);
-		ssd1306_Write_Partial_Frame();
-	}
-	delay2();
+	ssd1306_Set_Cursor(0, 0);
+	ssd1306_PutSTR("Hello!");
+//	for (uint8_t c = ' '; c <= '~'; c++)
+//	{
+//		if (((c - ' ') % 33) == 0)
+//		{
+//			ssd1306_Write_Partial_Frame();
+//			ssd1306_Clear_Frame();
+//			ssd1306_Set_Cursor(0, 0);
+////			delay3();
+//		}
+//		ssd1306_PutC(c);
+//	}
+	ssd1306_Write_Partial_Frame();
+	delay();
 	ssd1306_Set_Font(&font_16x26);
-	for (uint8_t c = ' '; c <= '~'; c++)
-	{
-		if (((c - ' ') % 14) == 0)
-		{
-			ssd1306_Clear_Frame();
-			ssd1306_Set_Cursor(0, 0);
-			delay2();
-		}
-		ssd1306_PutC(c);
-		ssd1306_Write_Partial_Frame();
-	}
-	delay2();
-//	ssd1306_Clear_Frame();
-//	ssd1306_Set_Cursor(0, 0);
-//	printf("16:08:28\n");
-//	ssd1306_Write_Partial_Frame();
-//	delay();
-
+	ssd1306_Set_Cursor(0, 0);
+	ssd1306_PutSTR("Hello!");
+//	for (uint8_t c = ' '; c <= '~'; c++)
+//	{
+//		if (((c - ' ') % 14) == 0)
+//		{
+//			ssd1306_Write_Partial_Frame();
+//			ssd1306_Clear_Frame();
+//			ssd1306_Set_Cursor(0, 0);
+//			delay3();
+//		}
+//		ssd1306_PutC(c);
+//	}
+	ssd1306_Write_Partial_Frame();
+	delay();
 }
 
 void ssd1306_Test_Draw_Image()
@@ -684,7 +669,9 @@ void ssd1306_Test_Draw_Image()
 	ssd1306_Clear_Frame();
 	ssd1306_Draw_Bitmap(32, 0, peugeot, 64, 64);
 	ssd1306_Write_Partial_Frame();
-	delay();
+	delay2();
+	delay2();
+	delay2();
 }
 
 
@@ -694,24 +681,275 @@ void ssd1306_Test_Draw_Image2()
 	ssd1306_Set_Font(&font_5x7);
 	for(int i =0; i< 24;i++)
 	{
-	ssd1306_PutC('P');
-	ssd1306_PutC('e');
-	ssd1306_PutC('u');
-	ssd1306_PutC('g');
-	ssd1306_PutC('e');
-	ssd1306_PutC('o');
-	ssd1306_PutC('t');
-	ssd1306_Write_Partial_Frame();
-	delay2();
+		ssd1306_PutSTR("Peugeot");
 	}
 	ssd1306_Write_Partial_Frame();
 	delay();
-	delay();
-//	delay();
-//	ssd1306_Reset_boundaries();
 	ssd1306_Draw_Bitmap2(0, 0, peugeot, 64, 64, ssd1306_pixel_XOR);
 	ssd1306_Draw_Bitmap2(64, 0, peugeot, 64, 64, ssd1306_pixel_AND);
 	ssd1306_Write_Partial_Frame();
 	delay();
+}
+
+void ssd1306_test_circle()
+{
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_full);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_top_right);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_bot_right);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_bot_Left);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_top_left);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_half_hor_top);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_half_hor_bot);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_half_ver_right);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_half_ver_left);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+//	for (uint8_t i = 0; i < 20; i++)
+//	{
+//		ssd1306_Clear_Frame();
+//		ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_top_right);
+//		ssd1306_Write_Partial_Frame();
+////			delay3();
+////			ssd1306_Clear_Frame();
+//		ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White,
+//		                    ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_bot_right);
+//		ssd1306_Write_Partial_Frame();
+//		ssd1306_Draw_Circle(
+//		        64,
+//		        32,
+//		        30,
+//		        ssd1306_color_White,
+//		        ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_bot_right
+//		        | ssd1306_circle_quarter_bot_Left);
+//		ssd1306_Write_Partial_Frame();
+//		ssd1306_Draw_Circle(
+//		        64,
+//		        32,
+//		        30,
+//		        ssd1306_color_White,
+//		        ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_bot_right
+//		        | ssd1306_circle_quarter_bot_Left | ssd1306_circle_quarter_top_left);
+//		ssd1306_Write_Partial_Frame();
+//		ssd1306_Clear_Frame();
+//		ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_bot_right);
+//		ssd1306_Write_Partial_Frame();
+//		ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White,
+//		                    ssd1306_circle_quarter_bot_right | ssd1306_circle_quarter_bot_Left);
+//		ssd1306_Write_Partial_Frame();
+//		ssd1306_Draw_Circle(
+//		        64,
+//		        32,
+//		        30,
+//		        ssd1306_color_White,
+//		        ssd1306_circle_quarter_bot_right | ssd1306_circle_quarter_bot_Left
+//		        | ssd1306_circle_quarter_top_left);
+//		ssd1306_Write_Partial_Frame();
+//		ssd1306_Draw_Circle(
+//		        64,
+//		        32,
+//		        30,
+//		        ssd1306_color_White,
+//		        ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_bot_right
+//		        | ssd1306_circle_quarter_bot_Left | ssd1306_circle_quarter_top_left);
+//		ssd1306_Write_Partial_Frame();
+//
+//		ssd1306_Clear_Frame();
+//		ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_bot_Left);
+//		ssd1306_Write_Partial_Frame();
+//		ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White,
+//		                    ssd1306_circle_quarter_bot_Left | ssd1306_circle_quarter_top_left);
+//		ssd1306_Write_Partial_Frame();
+//
+//		ssd1306_Draw_Circle(
+//		        64,
+//		        32,
+//		        30,
+//		        ssd1306_color_White,
+//		        ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_bot_Left
+//		        | ssd1306_circle_quarter_top_left);
+//		ssd1306_Write_Partial_Frame();
+//		ssd1306_Draw_Circle(
+//		        64,
+//		        32,
+//		        30,
+//		        ssd1306_color_White,
+//		        ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_bot_right
+//		        | ssd1306_circle_quarter_bot_Left | ssd1306_circle_quarter_top_left);
+//		ssd1306_Write_Partial_Frame();
+////			delay3();
+////			ssd1306_Clear_Frame();
+//		ssd1306_Clear_Frame();
+//		ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_top_left);
+//		ssd1306_Write_Partial_Frame();
+//		ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White,
+//		                    ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_top_left);
+//		ssd1306_Write_Partial_Frame();
+//		ssd1306_Draw_Circle(
+//		        64,
+//		        32,
+//		        30,
+//		        ssd1306_color_White,
+//		        ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_bot_right
+//		        | ssd1306_circle_quarter_top_left);
+//		ssd1306_Write_Partial_Frame();
+//		ssd1306_Draw_Circle(
+//		        64,
+//		        32,
+//		        30,
+//		        ssd1306_color_White,
+//		        ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_bot_right
+//		        | ssd1306_circle_quarter_bot_Left | ssd1306_circle_quarter_top_left);
+//		ssd1306_Write_Partial_Frame();
+//	}
+
+}
+
+void ssd1306_Test_Filled_Circle()
+{
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle_Filled(64, 32, 30, ssd1306_color_White, ssd1306_circle_full);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+//	red_On();
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle_Filled(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_top_right);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+//	green_On();
+//	red_Off();
+
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle_Filled(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_bot_right);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+//	blue_On();
+//	green_Off();
+
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle_Filled(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_bot_Left);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+
+//	red_On();
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle_Filled(64, 32, 30, ssd1306_color_White, ssd1306_circle_quarter_top_left);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+//	green_On();
+//	blue_Off();
+
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_full);
+	ssd1306_Draw_Circle_Filled(64, 32, 30, ssd1306_color_White,
+	                           ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_bot_Left);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Circle(64, 32, 30, ssd1306_color_White, ssd1306_circle_full);
+	ssd1306_Draw_Circle_Filled(64, 32, 30, ssd1306_color_White,
+	                           ssd1306_circle_quarter_top_left | ssd1306_circle_quarter_bot_right);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+
+
+
+}
+
+void ssd1306_Test_round_rect()
+{
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Rect_Round( 2,  5, 30, 25, 8, ssd1306_circle_full, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round(35,  5, 30, 25, 8, ssd1306_circle_quarter_top_left, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round(70,  5, 30, 25, 8, ssd1306_circle_quarter_top_right, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round( 2, 35, 30, 25, 8, ssd1306_circle_quarter_bot_Left, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round(35, 35, 30, 25, 8, ssd1306_circle_quarter_bot_right, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round(70, 35, 30, 25, 8, ssd1306_circle_quarter_bot_right | ssd1306_circle_quarter_top_left, ssd1306_color_White);
+	ssd1306_Write_Partial_Frame();
+	delay2();delay2();delay2();
+}
+void ssd1306_Test__filled_round_rect()
+{
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Rect_Round_filled( 2,  5, 30, 25, 8, ssd1306_circle_full, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round_filled(35,  5, 30, 25, 8, ssd1306_circle_quarter_top_left, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round_filled(70,  5, 30, 25, 8, ssd1306_circle_quarter_top_right, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round_filled(2, 35, 30, 25, 8, ssd1306_circle_quarter_bot_Left, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round_filled(35, 35, 30, 25, 8, ssd1306_circle_quarter_bot_right, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round_filled(70, 35, 30, 25, 8, ssd1306_circle_quarter_bot_right | ssd1306_circle_quarter_top_left, ssd1306_color_White);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+	delay2();
+	delay2();
+
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Rect_Round_filled( 2,  5, 30, 25, 8, ssd1306_circle_quarter_bot_Left| ssd1306_circle_quarter_top_right, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round_filled(35,  5, 30, 25, 8, ssd1306_circle_quarter_bot_right | ssd1306_circle_quarter_bot_Left, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round_filled(70,  5, 30, 25, 8, ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_top_left, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round_filled( 2, 35, 30, 25, 8, ssd1306_circle_quarter_top_right | ssd1306_circle_quarter_bot_right,ssd1306_color_White);
+	ssd1306_Draw_Rect_Round_filled(35, 35, 30, 25, 8, ssd1306_circle_quarter_top_left | ssd1306_circle_quarter_bot_Left,ssd1306_color_White);
+	ssd1306_Draw_Rect_Round_filled(70, 35, 30, 25, 0, ssd1306_circle_quarter_top_left | ssd1306_circle_quarter_bot_Left, ssd1306_color_White);
+	ssd1306_Write_Partial_Frame();
+	delay2();
+	delay2();
+	delay2();
+
+}
+
+void ssd1306_Test_ProgressBar()
+{
+	ssd1306_Clear_Frame();
+	ssd1306_Draw_Direct_Rectangle(10, 10, 114, 30, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round(10, 40, 104, 20, 7, ssd1306_circle_full, ssd1306_color_White);
+	ssd1306_Write_Partial_Frame();
+	delay();
+	uint8_t width =0;
+
+	for(uint8_t i= 0 ; i <= 50; i ++)
+	{
+
+		width = rand() % 100;
+		ssd1306_Draw_Recangle_Filled(12, 12, 110, 28, ssd1306_color_Black);
+		ssd1306_Draw_Recangle_Filled(12, 12, 12+width, 28, ssd1306_color_White);
+		ssd1306_Write_Partial_Frame();
+		delay2();
+		width = rand() % 100;
+		ssd1306_Draw_Rect_Round_filled(12, 42, 100, 16, 7, ssd1306_circle_full, ssd1306_color_Black);
+		ssd1306_Draw_Rect_Round_filled(12, 42, width, 16, 5, ssd1306_circle_full, ssd1306_color_White);
+		ssd1306_Write_Partial_Frame();
+		delay2();
+//		delay2();
+
+	}
+	ssd1306_Draw_Recangle_Filled(12, 12, 112, 28, ssd1306_color_White);
+	ssd1306_Draw_Rect_Round_filled(12, 42, 100, 16, 5, ssd1306_circle_full, ssd1306_color_White);
+	ssd1306_Write_Partial_Frame();
 	delay();
 }
