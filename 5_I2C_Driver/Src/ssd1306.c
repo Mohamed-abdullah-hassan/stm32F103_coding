@@ -20,9 +20,9 @@
  * SSD1306 Display Macros
  */
 /* Write command */
-#define SSD1306_WRITECOMMAND(command) ssd1306_I2C_Write(SSD1306_I2C_ADDR, 0x00, (command))
+#define SSD1306_WRITECOMMAND(command) 	ssd1306_I2C_Write(SSD1306_I2C_ADDR, 0x00, (command))
 /* Write data */
-#define SSD1306_WRITEDATA(data) ssd1306_I2C_Write(SSD1306_I2C_ADDR, 0x40, (data))
+#define SSD1306_WRITEDATA(data) 		ssd1306_I2C_Write(SSD1306_I2C_ADDR, 0x40, (data))
 
 /*
  * SSD1306 variables
@@ -44,6 +44,17 @@ struct __cursor
 
 fontHead_t * font;
 
+enum __cursor_step
+{
+	step_left = 0x00, step_Right, step_Down, step_Up, step_Most_left, step_Most_Up,
+};
+typedef uint8_t cursor_step;
+
+/**************************************************************************/
+/*
+    @brief  SSD1306 module Initialization commands
+*/
+/**************************************************************************/
 const uint8_t ssd1306_init[] =
 	{ (0xAE),     // display off
 	  (0x20),     // Set Memory Addressing Mode
@@ -76,8 +87,16 @@ const uint8_t ssd1306_init[] =
 	  (SSD1306_DEACTIVATE_SCROLL) };
 
 /*
- * SSD1306 Functions
+ * SSD1306 Display Functions
  */
+
+/**************************************************************************/
+/*
+    @brief  preform SSD1306 module Initialization process
+    @note	Must be called before using the display
+    @tag	SSD1306 Bus routines
+*/
+/**************************************************************************/
 void ssd1306_I2C_Init( )
 {
 	i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
@@ -92,11 +111,132 @@ void ssd1306_I2C_Init( )
 	textCursor.y_text = 0;
 }
 
+/************************************************************************/
+/*
+    @brief  Send the following data to SSD1306
+    @tag	SSD1306 Bus routines
+*/
+/************************************************************************/
 void ssd1306_I2C_Write(uint8_t address , uint8_t reg , uint8_t data )
 {
 	i2c1_write(data);
 }
 
+/************************************************************************/
+/*
+    @brief  Clear Display and turn off all pixels
+    @note 	Testing only use instead ssd1306_Clear_Frame( )
+    @tag	SSD1306 Low Level
+*/
+/************************************************************************/
+void ssd1306_I2C_Clear(void )
+{
+	uint8_t m;
+
+	for (m = 0; m < 8; m++)
+	{
+		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
+		i2c1_write(0xB0 + m);
+		i2c1_write(0x00);
+		i2c1_write(0x10);
+		i2c1_End();
+		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
+		for (uint8_t i = 0; i < 128; i++)
+			i2c1_write(0x00);
+		i2c1_End();
+	}
+}
+
+/************************************************************************/
+/*
+    @brief  Set Display and turn ON all pixels
+    @note 	Testing only
+    @tag	SSD1306 Low Level
+*/
+/************************************************************************/
+void ssd1306_I2C_Set(void )
+{
+	uint8_t m;
+
+	for (m = 0; m < 8; m++)
+	{
+		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
+		i2c1_write(0xB0 + m);
+		i2c1_write(0x00);
+		i2c1_write(0x10);
+		i2c1_End();
+		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
+		for (uint8_t i = 0; i < 128; i++)
+			i2c1_write(0xFF);
+		i2c1_End();
+	}
+}
+
+/************************************************************************/
+/*
+    @brief  fill Display with a specific simple pattern
+    @param	pattern		the data to be written to display
+    @note 	Testing only
+    @tag	SSD1306 Low Level
+*/
+/************************************************************************/
+void ssd1306_I2C_Fill(uint8_t pattern )
+{
+	uint8_t m;
+
+	for (m = 0; m < 8; m++)
+	{
+		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
+		i2c1_write(0xB0 + m);
+		i2c1_write(0x00);
+		i2c1_write(0x10);
+		i2c1_End();
+		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
+		for (uint8_t i = 0; i < 128; i++)
+			i2c1_write(pattern);
+		i2c1_End();
+	}
+}
+
+/************************************************************************/
+/*
+    @brief  fill Display with a specific 8X8 pattern
+    @param	pattern		the data to be written to display
+    @note 	Testing only use ssd1306_Fill_buffer()
+    @tag	SSD1306 Low Level
+*/
+/************************************************************************/
+void ssd1306_I2C_Fill_char(uint8_t pattern )
+{
+	uint8_t m;
+	for (m = 0; m < 8; m++)
+	{
+		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
+		i2c1_write(0xB0 + m);
+		i2c1_write(0x00);
+		i2c1_write(0x10);
+		i2c1_End();
+		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
+		for (uint8_t i = 0; i < 128 / 2; i++)
+		{
+			i2c1_write(0x00);
+			i2c1_write(pattern);
+		}
+		i2c1_End();
+	}
+}
+
+/************************************************************************/
+/*
+    @brief  Frame buffer updated portion registering, Which is used for
+    		optimizing data sent and only sending modified portion of the
+    		display
+    @param	x_Pos	The X position "Row number" of the updated pixel
+    @param	page	The corresponding Page for the updated pixel column
+    @note	Internal use only
+    @tag	SSD1306 Frame Buffer
+*/
+/************************************************************************/
 void ssd1306_Update_frame_XPage_boundaries(uint8_t x_Pos , uint8_t page )
 {
 	if (x_Pos >= SSD1306_Display_Width) x_Pos = SSD1306_Display_Width - 1;
@@ -107,8 +247,17 @@ void ssd1306_Update_frame_XPage_boundaries(uint8_t x_Pos , uint8_t page )
 	if (display_Buffer.y_Page_End < page) display_Buffer.y_Page_End = page;
 }
 
-
-
+/************************************************************************/
+/*
+    @brief  Frame buffer updated portion registering, Which is used for
+    		optimizing data sent and only sending modified portion of the
+    		display
+    @param	x_Pos	The X position "Row number" of the updated pixel
+    @param	page	The Y position "Column number" the updated pixel
+    @note	Internal use only
+    @tag	SSD1306 Frame Buffer
+*/
+/************************************************************************/
 void ssd1306_Update_frame_XY_boundaries(uint8_t x_Pos , uint8_t y_Pos )
 {
 	if (y_Pos >= SSD1306_Display_Height) y_Pos = SSD1306_Display_Height - 1;
@@ -116,6 +265,12 @@ void ssd1306_Update_frame_XY_boundaries(uint8_t x_Pos , uint8_t y_Pos )
 	ssd1306_Update_frame_XPage_boundaries(x_Pos, page);
 }
 
+/************************************************************************/
+/*
+    @brief  Resets updated pixel to reflect no alternation occurred
+    @tag	SSD1306 Frame Buffer
+*/
+/************************************************************************/
 void ssd1306_Reset_boundaries()
 {
 	display_Buffer.x_Col_End = 0x00;
@@ -124,13 +279,123 @@ void ssd1306_Reset_boundaries()
 	display_Buffer.y_Page_Start = SSD1306_Display_Width - 1;
 }
 
+
+/************************************************************************/
+/*
+    @brief  Safe method to access Frame Buffer data for setting
+    @param	indx	The index of the Byte in the array
+    @param	data	The data to be written in the array
+
+    @tag	SSD1306 Frame Buffer
+*/
+/************************************************************************/
 void ssd1306_Directframe_Set(uint16_t indx , uint8_t data )
 {
-	display_Buffer.Frame[indx] = data;
-	ssd1306_Update_frame_XPage_boundaries(indx % SSD1306_Display_Width,
-	                                      indx / SSD1306_Display_Height);
+	if (indx < sizeof(display_Buffer.Frame))
+	{
+		display_Buffer.Frame[indx] = data;
+		ssd1306_Update_frame_XPage_boundaries(indx % SSD1306_Display_Width,
+		                                      indx / SSD1306_Display_Height);
+	}
 }
 
+/************************************************************************/
+/*
+    @brief  		Safe method to access Frame Buffer data for Reading
+    @param	indx	The index of the Byte in the array
+    @returns		The data need to be read of Type uint8_t
+    @tag			SSD1306 Frame Buffer
+*/
+/************************************************************************/
+uint8_t ssd1306_Directframe_Get(uint16_t indx)
+{
+	if (indx < sizeof(display_Buffer.Frame))
+	{
+		 return display_Buffer.Frame[indx];
+	}
+	return 0;
+}
+
+/************************************************************************/
+/*
+    @brief  		Send Updated window in frame buffer to display
+    @tag			SSD1306 Frame Buffer
+*/
+/************************************************************************/
+void ssd1306_Write_Partial_Frame( )
+{
+	uint8_t m;
+	uint16_t idx = 0;
+
+	for (m = display_Buffer.y_Page_Start; m <= display_Buffer.y_Page_End; m++)
+	{
+		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
+		i2c1_write(0xB0 + m);
+		i2c1_write(0x00 | ((display_Buffer.x_Col_Start) & 0x0F));
+		i2c1_write(0x10 | ((display_Buffer.x_Col_Start >> 4)));
+		i2c1_End();
+		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
+		for (uint8_t i = display_Buffer.x_Col_Start; i <= display_Buffer.x_Col_End; i++)
+		{
+			idx = (128 * m) + i;
+			i2c1_write(display_Buffer.Frame[idx]);
+		}
+		i2c1_End();
+	}
+	display_Buffer.x_Col_End = 0x00;
+	display_Buffer.y_Page_End = 0x00;
+	display_Buffer.x_Col_Start = SSD1306_Display_Height - 1;
+	display_Buffer.y_Page_Start = SSD1306_Display_Width - 1;
+}
+
+/************************************************************************/
+/*
+    @brief  Rest Frame buffer to zero and configure all frame as updated
+    @tag			SSD1306 Frame Buffer
+*/
+/************************************************************************/
+void ssd1306_Clear_Frame( )
+{
+	for (uint16_t i = 0; i < sizeof(display_Buffer.Frame); i++)
+	{
+		display_Buffer.Frame[i] = 0x00;
+	}
+	display_Buffer.x_Col_End = SSD1306_Display_Width - 1;
+	display_Buffer.y_Page_End = SSD1306_Display_Pages - 1;
+	display_Buffer.x_Col_Start = 0x00;
+	display_Buffer.y_Page_Start = 0x00;
+}
+
+/************************************************************************/
+/*
+    @brief  Fills the frame buffer with simple pattern and a leading space
+    @tag			SSD1306 Frame Buffer
+*/
+/************************************************************************/
+void ssd1306_Fill_buffer(uint8_t pattern )
+{
+	for (uint16_t i = 0; i < sizeof(display_Buffer.Frame); i += 2)
+	{
+		display_Buffer.Frame[i] = 0x00;
+		display_Buffer.Frame[i + 1] = pattern;
+	}
+}
+
+/******************************************************************************************/
+/*
+    @brief  Sets or Clears a pixel in the frame buffer
+    @param	x_Pos		The X Position of the Pixel
+    @param	y_Pos		The Y Position of the Pixel
+    @param	operation	Operation type on the Pixel of type :
+    					ssd1306_pixel_Set - Normal operation according to color
+    					ssd1306_pixel_OR  - OR operation between color and current pixel
+    					ssd1306_pixel_AND - AND operation between color and current pixel
+    					ssd1306_pixel_XOR - XOR	operation between color and current pixel
+    @note 	Internal Use only
+	@param	color 		Black or white pixel
+    @tag	SSD1306 Graphics - Pixel Operation
+*/
+/******************************************************************************************/
 void ssd1306_Pixel_Set(uint8_t x_Pos , uint8_t y_Pos , ssd1306_pixel_op operation , ssd1306_color_t color )
 {
 	/* Check of one of the coordinates is out of boundaries*/
@@ -169,131 +434,25 @@ void ssd1306_Pixel_Set(uint8_t x_Pos , uint8_t y_Pos , ssd1306_pixel_op operatio
 		else
 			new ^= 0x00;
 		display_Buffer.Frame[(page * 128) + x_Pos] = ((display_Buffer.Frame[(page * 128) + x_Pos]
-		        & (~temp))
-		                                              | new);
+		        & (~temp))| new);
 	}
 	ssd1306_Update_frame_XPage_boundaries(x_Pos, page);
 }
 
-void ssd1306_Write_Partial_Frame( )
-{
-	uint8_t m;
-	uint16_t idx = 0;
-
-	for (m = display_Buffer.y_Page_Start; m <= display_Buffer.y_Page_End; m++)
-	{
-		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
-		i2c1_write(0xB0 + m);
-		i2c1_write(0x00 | ((display_Buffer.x_Col_Start) & 0x0F));
-		i2c1_write(0x10 | ((display_Buffer.x_Col_Start >> 4)));
-		i2c1_End();
-		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
-		for (uint8_t i = display_Buffer.x_Col_Start; i <= display_Buffer.x_Col_End; i++)
-		{
-			idx = (128 * m) + i;
-			i2c1_write(display_Buffer.Frame[idx]);
-		}
-		i2c1_End();
-	}
-	display_Buffer.x_Col_End = 0x00;
-	display_Buffer.y_Page_End = 0x00;
-	display_Buffer.x_Col_Start = SSD1306_Display_Height - 1;
-	display_Buffer.y_Page_Start = SSD1306_Display_Width - 1;
-}
-
-void ssd1306_Clear_Frame( )
-{
-	for (uint16_t i = 0; i < sizeof(display_Buffer.Frame); i++)
-	{
-		display_Buffer.Frame[i] = 0x00;
-	}
-	display_Buffer.x_Col_End = SSD1306_Display_Width - 1;
-	display_Buffer.y_Page_End = SSD1306_Display_Pages - 1;
-	display_Buffer.x_Col_Start = 0x00;
-	display_Buffer.y_Page_Start = 0x00;
-}
-void ssd1306_I2C_Clear(void )
-{
-	uint8_t m;
-
-	for (m = 0; m < 8; m++)
-	{
-		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
-		i2c1_write(0xB0 + m);
-		i2c1_write(0x00);
-		i2c1_write(0x10);
-		i2c1_End();
-		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
-		for (uint8_t i = 0; i < 128; i++)
-			i2c1_write(0x00);
-		i2c1_End();
-	}
-}
-
-void ssd1306_I2C_Set(void )
-{
-	uint8_t m;
-
-	for (m = 0; m < 8; m++)
-	{
-		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
-		i2c1_write(0xB0 + m);
-		i2c1_write(0x00);
-		i2c1_write(0x10);
-		i2c1_End();
-		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
-		for (uint8_t i = 0; i < 128; i++)
-			i2c1_write(0xFF);
-		i2c1_End();
-	}
-}
-
-void ssd1306_I2C_Fill(uint8_t pattern )
-{
-	uint8_t m;
-
-	for (m = 0; m < 8; m++)
-	{
-		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
-		i2c1_write(0xB0 + m);
-		i2c1_write(0x00);
-		i2c1_write(0x10);
-		i2c1_End();
-		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
-		for (uint8_t i = 0; i < 128; i++)
-			i2c1_write(pattern);
-		i2c1_End();
-	}
-}
-void ssd1306_I2C_Fill_char(uint8_t pattern )
-{
-	uint8_t m;
-	for (m = 0; m < 8; m++)
-	{
-		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
-		i2c1_write(0xB0 + m);
-		i2c1_write(0x00);
-		i2c1_write(0x10);
-		i2c1_End();
-		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
-		for (uint8_t i = 0; i < 128 / 2; i++)
-		{
-			i2c1_write(0x00);
-			i2c1_write(pattern);
-		}
-		i2c1_End();
-	}
-}
-
-void ssd1306_Fill_buffer(uint8_t pattern )
-{
-	for (uint16_t i = 0; i < sizeof(display_Buffer.Frame); i += 2)
-	{
-		display_Buffer.Frame[i] = 0x00;
-		display_Buffer.Frame[i + 1] = pattern;
-	}
-}
-
+/******************************************************************************************/
+/*
+    @brief  Sets or Clears a pixel in the frame buffer according to color
+    @param	x_Pos		The X Position of the Pixel
+    @param	y_Pos		The Y Position of the Pixel
+    @param	operation	Operation type on the Pixel of type :
+    					ssd1306_pixel_Set - Normal operation according to color
+    					ssd1306_pixel_OR  - OR operation between color and current pixel
+    					ssd1306_pixel_AND - AND operation between color and current pixel
+    					ssd1306_pixel_XOR - XOR	operation between color and current pixel
+    @param	color 		Black or white pixel
+    @tag	SSD1306 Graphics - Pixel Operation
+*/
+/******************************************************************************************/
 void ssd1306_Draw_Pixel(uint8_t x_Pos , uint8_t y_Pos , ssd1306_color_t color )
 {
 	/* Check of one of the coordinates is out of boundaries*/
@@ -323,6 +482,18 @@ void ssd1306_Draw_Pixel(uint8_t x_Pos , uint8_t y_Pos , ssd1306_color_t color )
 	ssd1306_Update_frame_XY_boundaries(x_Pos, y_Pos);
 }
 
+/******************************************************************************************/
+/*
+    @brief  Draw a Horizontal line
+    @param	x_Start		line starting x Position of the Line
+    @param	y_Start		line starting y Position of the Line
+    @param	width		The width of the line
+    @param	color 		Black or white pixel
+    @note	passing width = 0 results in no line to be drawn
+    @note 	Left to Right line drawing only
+    @tag	SSD1306 Graphics - Line Operation
+*/
+/******************************************************************************************/
 void ssd1306_Draw_Line_H(uint8_t x_Start , uint8_t y_Start , uint8_t width , ssd1306_color_t color )
 {
 	/* Check if the width is pointing to negative direction and correct it*/
@@ -362,6 +533,18 @@ void ssd1306_Draw_Line_H(uint8_t x_Start , uint8_t y_Start , uint8_t width , ssd
 	}
 }
 
+/******************************************************************************************/
+/*
+    @brief  Draw a Vertical line
+    @param	x_Start		line starting x Position of the Line
+    @param	y_Start		line starting y Position of the Line
+    @param	height		The height of the line
+    @param	color 		Black or white pixel
+    @note	passing height = 0 results in no line to be drawn
+    @note	Downward line drawing only
+    @tag	SSD1306 Graphics - Line Operation
+*/
+/******************************************************************************************/
 void ssd1306_Draw_Line_V(uint8_t x_Start , uint8_t y_Start , uint8_t height , ssd1306_color_t color )
 {
 	/* Check if the coordinates is out of display*/
@@ -411,6 +594,17 @@ void ssd1306_Draw_Line_V(uint8_t x_Start , uint8_t y_Start , uint8_t height , ss
 	}
 }
 
+/******************************************************************************************/
+/*
+    @brief  Draw any Line
+    @param	x0		line starting x Position
+    @param	y0		line starting y Position
+    @param	x1		Line ending x position
+    @param	y1		Line ending y position
+    @param	color 	Black or white pixel
+    @tag	SSD1306 Graphics - Rectangle Operation
+*/
+/******************************************************************************************/
 void ssd1306_Draw_Line(uint8_t x0 , uint8_t y0 , uint8_t x1 , uint8_t y1 , ssd1306_color_t color )
 {
 	/* Check if any of the point is out of the display area and crop it*/
@@ -459,6 +653,17 @@ void ssd1306_Draw_Line(uint8_t x0 , uint8_t y0 , uint8_t x1 , uint8_t y1 , ssd13
 	}
 }
 
+/******************************************************************************************/
+/*
+    @brief  Draw a rectangular
+    @param	x0		top left x Position
+    @param	y0		top left y Position
+    @param	x1		Bottom Right x position
+    @param	y1		Bottom Right y position
+    @param	color 	Black or white pixel
+    @tag	SSD1306 Graphics - Rectangle Operation
+*/
+/******************************************************************************************/
 void ssd1306_Draw_Direct_Rectangle(uint8_t x0 , uint8_t y0 , uint8_t x1 , uint8_t y1 , ssd1306_color_t color )
 {
 	ssd1306_Draw_Line(x0, y0, x0, y1, color);
@@ -467,6 +672,17 @@ void ssd1306_Draw_Direct_Rectangle(uint8_t x0 , uint8_t y0 , uint8_t x1 , uint8_
 	ssd1306_Draw_Line(x0, y0, x1, y0, color);
 }
 
+/******************************************************************************************/
+/*
+    @brief  Draw a Filled rectangular
+    @param	x0		top left x Position
+    @param	y0		top left y Position
+    @param	x1		Bottom Right x position
+    @param	y1		Bottom Right y position
+    @param	color 	Black or white pixel
+    @tag	SSD1306 Graphics - Rectangle Operation
+*/
+/******************************************************************************************/
 void ssd1306_Draw_Recangle_Filled(uint8_t x0 , uint8_t y0 , uint8_t x1 , uint8_t y1 , ssd1306_color_t color )
 {
 	if ((x0 > x1) | (y0 > y1)) return;
@@ -478,7 +694,18 @@ void ssd1306_Draw_Recangle_Filled(uint8_t x0 , uint8_t y0 , uint8_t x1 , uint8_t
 	}
 }
 
-void ssd1306_Draw_Rectangle(ssd1306_point P0 , ssd1306_point P1 , ssd1306_point p2 , ssd1306_point P3 , ssd1306_color_t color )
+/******************************************************************************************/
+/*
+    @brief  Draw a Quadrilaterals shape
+    @param	P0		1st corner Position
+    @param	P1		2nd corner Position
+    @param	P2		3rd corner Position
+    @param	P3		4th corner Position
+    @param	color 	Black or white pixel
+    @tag	SSD1306 Graphics - Rectangle Operation
+*/
+/******************************************************************************************/
+void ssd1306_Draw_Quadrila(ssd1306_point P0 , ssd1306_point P1 , ssd1306_point p2 , ssd1306_point P3 , ssd1306_color_t color )
 {
 	ssd1306_Draw_Line(P0.x_point, P0.y_point, P1.x_point, P1.y_point, color);
 	ssd1306_Draw_Line(P1.x_point, P1.y_point, p2.x_point, p2.y_point, color);
@@ -486,6 +713,160 @@ void ssd1306_Draw_Rectangle(ssd1306_point P0 , ssd1306_point P1 , ssd1306_point 
 	ssd1306_Draw_Line(P3.x_point, P3.y_point, P0.x_point, P0.y_point, color);
 }
 
+/******************************************************************************************/
+/*
+    @brief  Draw a Rounded Edge rectangle
+    @param	x_Pos		top left x position
+    @param	y_Pos		top left y position
+    @param	width		rectangle width
+    @param	height		rectangle height
+    @param	radius		the radius of the rounded edges
+     @param	corner		corners of the rectangle to be drawn,
+			ssd1306_circle_quarter_top_left, ssd1306_circle_quarter_top_right,
+			ssd1306_circle_quarter_bot_Left,ssd1306_circle_quarter_bot_right,
+			ssd1306_circle_half_ver_left,ssd1306_circle_half_ver_right,
+			ssd1306_circle_half_hor_top,ssd1306_circle_half_hor_bot,
+			ssd1306_circle_full.
+    @param	color 	Black or white pixel
+    @note	if height or width < 2 * radius the drawing is canceled
+    @tag	SSD1306 Graphics - Rectangle Operation
+*/
+/******************************************************************************************/
+void ssd1306_Draw_Rect_Round(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_t height, uint8_t radius, ssd1306_circle_corners corners, ssd1306_color_t color )
+{
+	if(width < (2 * radius)) return;
+	if (height < (2* radius)) return;
+	uint8_t x1,x2,x3,x4,y1,y2,y3,y4;
+	x1 = x2 = x_Pos;
+	x3 = x4 = x_Pos + width;
+	y1 = y2 = y_Pos;
+	y3 = y4 = y_Pos + height;
+	if(corners & ssd1306_circle_quarter_top_left)
+	{
+		x1 += radius;
+		y1 += radius;
+		ssd1306_Draw_Circle(x1, y1, radius, color, ssd1306_circle_quarter_top_left);
+	}
+	if(corners & ssd1306_circle_quarter_top_right)
+	{
+		x3 -= radius;
+		y2 += radius;
+		ssd1306_Draw_Circle(x3, y2, radius, color, ssd1306_circle_quarter_top_right);
+	}
+	if(corners & ssd1306_circle_quarter_bot_Left)
+	{
+		x2 += radius;
+		y3 -= radius;
+		ssd1306_Draw_Circle(x2, y3, radius, color, ssd1306_circle_quarter_bot_Left);
+	}
+	if(corners & ssd1306_circle_quarter_bot_right)
+	{
+		x4 -= radius;
+		y4 -= radius;
+		ssd1306_Draw_Circle(x4, y4, radius, color,ssd1306_circle_quarter_bot_right);
+	}
+
+	ssd1306_Draw_Line_H(x1, y_Pos, (x3 - x1), color);
+	ssd1306_Draw_Line_V(x_Pos, y1, (y3 - y1), color);
+	ssd1306_Draw_Line_H(x2, y_Pos+ height, (x4 - x2), color);
+	ssd1306_Draw_Line_V(x_Pos + width, y2, (y4 - y2), color);
+
+}
+
+/******************************************************************************************/
+/*
+    @brief  Draw a Rounded Edge filled Rectangle
+    @param	x_Pos		top left x position
+    @param	y_Pos		top left y position
+    @param	width		rectangle width
+    @param	height		rectangle height
+    @param	radius		the radius of the rounded edges
+     @param	corner		corners of the rectangle to be drawn,
+			ssd1306_circle_quarter_top_left, ssd1306_circle_quarter_top_right,
+			ssd1306_circle_quarter_bot_Left,ssd1306_circle_quarter_bot_right,
+			ssd1306_circle_half_ver_left,ssd1306_circle_half_ver_right,
+			ssd1306_circle_half_hor_top,ssd1306_circle_half_hor_bot,
+			ssd1306_circle_full.
+    @param	color 	Black or white pixel
+    @note	if height or width < 2 * radius the drawing is canceled
+    @tag	SSD1306 Graphics - Rectangle Operation
+*/
+/******************************************************************************************/
+void ssd1306_Draw_Rect_Round_filled(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_t height, uint8_t radius, ssd1306_circle_corners corners, ssd1306_color_t color )
+{
+//	if(width < (2 * radius)) radius = width >>1;
+//	if (height < (2* radius)) radius = height >>1;
+	if(width < (2 * radius)) return;
+	if (height < (2* radius)) return;
+	uint8_t x1,x2,x3,x4,y1,y2,y3,y4;
+	x1 = x2 = x_Pos;
+	x3 = x4 = x_Pos + width;
+	y1 = y2 = y_Pos;
+	y3 = y4 = y_Pos + height;
+	if(corners & ssd1306_circle_quarter_top_left)
+	{
+		x1 += radius;
+		y1 += radius;
+		ssd1306_Draw_Circle_Filled(x1, y1, radius, color, ssd1306_circle_quarter_top_left);
+	}
+	if(corners & ssd1306_circle_quarter_top_right)
+	{
+		x3 -= radius;
+		y2 += radius;
+		ssd1306_Draw_Circle_Filled(x3, y2, radius, color, ssd1306_circle_quarter_top_right);
+	}
+	if(corners & ssd1306_circle_quarter_bot_Left)
+	{
+		x2 += radius;
+		y3 -= radius;
+		ssd1306_Draw_Circle_Filled(x2, y3, radius, color, ssd1306_circle_quarter_bot_Left);
+	}
+	if(corners & ssd1306_circle_quarter_bot_right)
+	{
+		x4 -= radius;
+		y4 -= radius;
+		ssd1306_Draw_Circle_Filled(x4, y4, radius, color,ssd1306_circle_quarter_bot_right);
+	}
+
+	uint8_t x_temp=0, y_temp=0;
+	if(y2 >= y1)	y_temp = y2;
+	else y_temp = y1;
+	ssd1306_Draw_Recangle_Filled(x1, y_Pos, x3, y_temp, color);
+
+	if(x2 >= x1) x_temp = x2;
+	else x_temp = x1;
+	ssd1306_Draw_Recangle_Filled(x_Pos, y1, x_temp, y3, color);
+
+	if(x4 >= x3) x_temp = x3;
+	else x_temp = x4;
+	ssd1306_Draw_Recangle_Filled(x_temp, y2, x_Pos + width, y4, color);
+
+	if(y4 >= y3)	y_temp = y3;
+	else y_temp = y4;
+	ssd1306_Draw_Recangle_Filled(x2, y_temp, x4, y_Pos + height, color);
+
+	if(y2 >= y1)	y_temp = y1;
+	else y_temp = y2;
+	if(x1 >= x2) x_temp = x1;
+	else x_temp = x2;
+	if(x3 < x4) x4 = x3;
+	if(y4 > y3)	y4 = y3;
+
+	ssd1306_Draw_Recangle_Filled(x_temp, y_temp, x4, y4, color);
+}
+
+
+/******************************************************************************************/
+/*
+    @brief  Draw a bitmap image to frame buffer
+     @param	x0		top left x Position
+    @param	y0		top left y Position
+    @param	*image	Pointer to image array
+    @param	width	image width
+    @param	height 	image height
+    @tag	SSD1306 Graphics - Bitmap Operation
+*/
+/******************************************************************************************/
 void ssd1306_Draw_Bitmap(uint8_t x_start , uint8_t y_start , const uint8_t *image , uint8_t width , uint8_t height )
 {
 	uint8_t data = 0;
@@ -515,7 +896,19 @@ void ssd1306_Draw_Bitmap(uint8_t x_start , uint8_t y_start , const uint8_t *imag
 	}
 }
 
-void ssd1306_Draw_Bitmap2(uint8_t x_start , uint8_t y_start , const uint8_t *image , uint8_t width , uint8_t height , ssd1306_pixel_op operation )
+/******************************************************************************************/
+/*
+    @brief  Draw a bitmap image to frame buffer with Pixel Operation
+     @param	x0		top left x Position
+    @param	y0		top left y Position
+    @param	*image	Pointer to image array
+    @param	width	image width
+    @param	height 	image height
+    @param  operation	Type of operation SET,AND,OR,XOR
+    @tag	SSD1306 Graphics - Bitmap Operation
+*/
+/******************************************************************************************/
+void ssd1306_Draw_Bitmap_PO(uint8_t x_start , uint8_t y_start , const uint8_t *image , uint8_t width , uint8_t height , ssd1306_pixel_op operation )
 {
 	uint8_t data = 0;
 	uint8_t xbit = 0;
@@ -544,6 +937,14 @@ void ssd1306_Draw_Bitmap2(uint8_t x_start , uint8_t y_start , const uint8_t *ima
 	}
 }
 
+/******************************************************************************************/
+/*
+    @brief  Set the starting position of text writing
+    @param	x0		top left x Position of the character
+    @param	y0		top left y Position of the character
+    @tag	SSD1306 Graphics - Text Operation
+*/
+/******************************************************************************************/
 void ssd1306_Set_Cursor(uint8_t xPos , uint8_t yPos )
 {
 	if (xPos >= SSD1306_Display_Width) return;
@@ -552,12 +953,28 @@ void ssd1306_Set_Cursor(uint8_t xPos , uint8_t yPos )
 	textCursor.y_text = yPos;
 }
 
-enum __cursor_step
+/******************************************************************************************/
+/*
+    @brief  Sets the font to be used
+    @param	*newFont	Pointer to required font
+    @tag	SSD1306 Graphics - Text Operation
+*/
+/******************************************************************************************/
+void ssd1306_Set_Font(fontHead_t *newFont )
 {
-	step_left = 0x00, step_Right, step_Down, step_Up, step_Most_left, step_Most_Up,
-};
-typedef uint8_t cursor_step;
+	if (newFont) font = newFont;
+}
 
+/******************************************************************************************/
+/*
+    @brief  Moves the position of next character position
+    @param	dir		The direction of the step: step_left, step_Down, step_Most_left, step_Most_Up
+    @note	not completed only use stated direction up
+    @note	Internal use only
+    @tag	SSD1306 Graphics - Text Operation
+
+*/
+/******************************************************************************************/
 void ssd1306_Step_Cursor(cursor_step dir )
 {
 	uint8_t value;
@@ -590,11 +1007,14 @@ void ssd1306_Step_Cursor(cursor_step dir )
 	}
 }
 
-void ssd1306_Set_Font(fontHead_t *newFont )
-{
-	if (newFont) font = newFont;
-}
+/******************************************************************************************/
+/*
+    @brief  Draw a character in the position previously configured
+    @param	c		the character to be drawn
 
+    @tag	SSD1306 Graphics - Text Operation
+*/
+/******************************************************************************************/
 void ssd1306_PutC(char c )
 {
 	// Check if there is a defined font
@@ -691,6 +1111,13 @@ void ssd1306_PutC(char c )
 
 }
 
+/******************************************************************************************/
+/*
+    @brief  Draw a string in Buffer
+    @param	*str	Pointer to null terminated character array
+    @tag	SSD1306 Graphics - Text Operation
+*/
+/******************************************************************************************/
 void ssd1306_PutSTR(char *str)
 {
 	while (*str) // Every string has NULL character at the end
@@ -699,6 +1126,22 @@ void ssd1306_PutSTR(char *str)
 	}
 }
 
+/******************************************************************************************/
+/*
+    @brief  Draw a Circle
+    @param	x_Pos	x position of circle center
+    @param	y_Pos	y position of circle center
+    @param	radius	radius of the circle
+    @param	color 	Black or white pixel
+    @param	corner	corners of the circle to be drawn,
+			ssd1306_circle_quarter_top_left, ssd1306_circle_quarter_top_right,
+			ssd1306_circle_quarter_bot_Left,ssd1306_circle_quarter_bot_right,
+			ssd1306_circle_half_ver_left,ssd1306_circle_half_ver_right,
+			ssd1306_circle_half_hor_top,ssd1306_circle_half_hor_bot,
+			ssd1306_circle_full.
+    @tag	SSD1306 Graphics - Circle Operation
+*/
+/******************************************************************************************/
 void ssd1306_Draw_Circle(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius, ssd1306_color_t color, ssd1306_circle_corners corner)
 {
 
@@ -759,6 +1202,23 @@ void ssd1306_Draw_Circle(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius, ssd130
 		}
 	}
 }
+
+/******************************************************************************************/
+/*
+    @brief  Draw a complete or partial Filled Circle
+    @param	x_Pos	x position of circle center
+    @param	y_Pos	y position of circle center
+    @param	radius	radius of the circle
+    @param	color 	Black or white pixel
+    @param	corner	corners of the circle to be drawn,
+			ssd1306_circle_quarter_top_left, ssd1306_circle_quarter_top_right,
+			ssd1306_circle_quarter_bot_Left,ssd1306_circle_quarter_bot_right,
+			ssd1306_circle_half_ver_left,ssd1306_circle_half_ver_right,
+			ssd1306_circle_half_hor_top,ssd1306_circle_half_hor_bot,
+			ssd1306_circle_full.
+    @tag	SSD1306 Graphics - Text Operation
+*/
+/******************************************************************************************/
 void ssd1306_Draw_Circle_Filled(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius, ssd1306_color_t color, ssd1306_circle_corners corner)
 {
 	int16_t f = 1 - radius;
@@ -823,107 +1283,4 @@ void ssd1306_Draw_Circle_Filled(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius,
 //				ssd1306_Pixel_Set(x_Pos + y, y_Pos - x, ssd1306_pixel_Set, color);     // right top
 		}
 	}
-}
-
-void ssd1306_Draw_Rect_Round(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_t height, uint8_t radius, ssd1306_circle_corners corners, ssd1306_color_t color )
-{
-	uint8_t x1,x2,x3,x4,y1,y2,y3,y4;
-	x1 = x2 = x_Pos;
-	x3 = x4 = x_Pos + width;
-	y1 = y2 = y_Pos;
-	y3 = y4 = y_Pos + height;
-	if(corners & ssd1306_circle_quarter_top_left)
-	{
-		x1 += radius;
-		y1 += radius;
-		ssd1306_Draw_Circle(x1, y1, radius, color, ssd1306_circle_quarter_top_left);
-	}
-	if(corners & ssd1306_circle_quarter_top_right)
-	{
-		x3 -= radius;
-		y2 += radius;
-		ssd1306_Draw_Circle(x3, y2, radius, color, ssd1306_circle_quarter_top_right);
-	}
-	if(corners & ssd1306_circle_quarter_bot_Left)
-	{
-		x2 += radius;
-		y3 -= radius;
-		ssd1306_Draw_Circle(x2, y3, radius, color, ssd1306_circle_quarter_bot_Left);
-	}
-	if(corners & ssd1306_circle_quarter_bot_right)
-	{
-		x4 -= radius;
-		y4 -= radius;
-		ssd1306_Draw_Circle(x4, y4, radius, color,ssd1306_circle_quarter_bot_right);
-	}
-
-	ssd1306_Draw_Line_H(x1, y_Pos, (x3 - x1), color);
-	ssd1306_Draw_Line_V(x_Pos, y1, (y3 - y1), color);
-	ssd1306_Draw_Line_H(x2, y_Pos+ height, (x4 - x2), color);
-	ssd1306_Draw_Line_V(x_Pos + width, y2, (y4 - y2), color);
-
-}
-
-void ssd1306_Draw_Rect_Round_filled(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_t height, uint8_t radius, ssd1306_circle_corners corners, ssd1306_color_t color )
-{
-//	if(width < (2 * radius)) radius = width >>1;
-//	if (height < (2* radius)) radius = height >>1;
-	if(width < (2 * radius)) return;
-	if (height < (2* radius)) return;
-	uint8_t x1,x2,x3,x4,y1,y2,y3,y4;
-	x1 = x2 = x_Pos;
-	x3 = x4 = x_Pos + width;
-	y1 = y2 = y_Pos;
-	y3 = y4 = y_Pos + height;
-	if(corners & ssd1306_circle_quarter_top_left)
-	{
-		x1 += radius;
-		y1 += radius;
-		ssd1306_Draw_Circle_Filled(x1, y1, radius, color, ssd1306_circle_quarter_top_left);
-	}
-	if(corners & ssd1306_circle_quarter_top_right)
-	{
-		x3 -= radius;
-		y2 += radius;
-		ssd1306_Draw_Circle_Filled(x3, y2, radius, color, ssd1306_circle_quarter_top_right);
-	}
-	if(corners & ssd1306_circle_quarter_bot_Left)
-	{
-		x2 += radius;
-		y3 -= radius;
-		ssd1306_Draw_Circle_Filled(x2, y3, radius, color, ssd1306_circle_quarter_bot_Left);
-	}
-	if(corners & ssd1306_circle_quarter_bot_right)
-	{
-		x4 -= radius;
-		y4 -= radius;
-		ssd1306_Draw_Circle_Filled(x4, y4, radius, color,ssd1306_circle_quarter_bot_right);
-	}
-
-	uint8_t x_temp=0, y_temp=0;
-	if(y2 >= y1)	y_temp = y2;
-	else y_temp = y1;
-	ssd1306_Draw_Recangle_Filled(x1, y_Pos, x3, y_temp, color);
-
-	if(x2 >= x1) x_temp = x2;
-	else x_temp = x1;
-	ssd1306_Draw_Recangle_Filled(x_Pos, y1, x_temp, y3, color);
-
-	if(x4 >= x3) x_temp = x3;
-	else x_temp = x4;
-	ssd1306_Draw_Recangle_Filled(x_temp, y2, x_Pos + width, y4, color);
-
-	if(y4 >= y3)	y_temp = y3;
-	else y_temp = y4;
-	ssd1306_Draw_Recangle_Filled(x2, y_temp, x4, y_Pos + height, color);
-
-	if(y2 >= y1)	y_temp = y1;
-	else y_temp = y2;
-	if(x1 >= x2) x_temp = x1;
-	else x_temp = x2;
-	if(x3 < x4) x4 = x3;
-	if(y4 > y3)	y4 = y3;
-
-	ssd1306_Draw_Recangle_Filled(x_temp, y_temp, x4, y4, color);
-
 }

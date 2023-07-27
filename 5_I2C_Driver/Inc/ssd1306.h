@@ -62,33 +62,43 @@ typedef struct
 //ssd1306_buffer my_Frame;
 
 void ssd1306_I2C_Init( );
-void ssd1306_Clear_Frame( );
-void ssd1306_Reset_boundaries( );
-void ssd1306_I2C_Write(uint8_t address , uint8_t reg , uint8_t data );
-//void ssd1306_I2C_Write_Frame( );
-void ssd1306_Directframe_Set(uint16_t indx , uint8_t data );
+
 void ssd1306_I2C_Clear(void );
 void ssd1306_I2C_Set(void );
 void ssd1306_I2C_Fill(uint8_t pattern );
 void ssd1306_I2C_Fill_char(uint8_t pattern );
+
+
+void ssd1306_Reset_boundaries( );
+void ssd1306_Directframe_Set(uint16_t indx , uint8_t data );
+uint8_t ssd1306_Directframe_Get(uint16_t indx);
+void ssd1306_Write_Partial_Frame( );
+void ssd1306_Clear_Frame( );
+void ssd1306_Fill_buffer(uint8_t pattern );
+
 void ssd1306_Draw_Pixel(uint8_t x_Pos , uint8_t y_Pos , ssd1306_color_t color );
+
 void ssd1306_Draw_Line_H(uint8_t x_Start , uint8_t y_Start , uint8_t width , ssd1306_color_t color );
 void ssd1306_Draw_Line_V(uint8_t x_Start , uint8_t y_Start , uint8_t height , ssd1306_color_t color );
 void ssd1306_Draw_Line(uint8_t x0 , uint8_t y0 , uint8_t x1 , uint8_t y1 , ssd1306_color_t color );
+
 void ssd1306_Draw_Direct_Rectangle(uint8_t x0 , uint8_t y0 , uint8_t x1 , uint8_t y1 , ssd1306_color_t color );
 void ssd1306_Draw_Recangle_Filled(uint8_t x0 , uint8_t y0 , uint8_t x1 , uint8_t y1 , ssd1306_color_t color );
-void ssd1306_Draw_Rectangle(ssd1306_point P0 , ssd1306_point P1 , ssd1306_point p2 , ssd1306_point P3 , ssd1306_color_t color );
+void ssd1306_Draw_Rect_Round(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_t height, uint8_t radius, ssd1306_circle_corners corners, ssd1306_color_t color );
+void ssd1306_Draw_Rect_Round_filled(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_t height, uint8_t radius, ssd1306_circle_corners corners, ssd1306_color_t color );
+
+void ssd1306_Draw_Quadrila(ssd1306_point P0 , ssd1306_point P1 , ssd1306_point p2 , ssd1306_point P3 , ssd1306_color_t color );
+
 void ssd1306_Draw_Bitmap(uint8_t x_start , uint8_t y_start , const uint8_t *image , uint8_t width , uint8_t height );
-void ssd1306_Draw_Bitmap2(uint8_t x_start , uint8_t y_start , const uint8_t *image , uint8_t width , uint8_t height , ssd1306_pixel_op operation );
-void ssd1306_Fill_buffer(uint8_t pattern );
-void ssd1306_Write_Partial_Frame( );
+void ssd1306_Draw_Bitmap_PO(uint8_t x_start , uint8_t y_start , const uint8_t *image , uint8_t width , uint8_t height , ssd1306_pixel_op operation );
 
 void ssd1306_Set_Cursor(uint8_t xPos , uint8_t yPos );
 void ssd1306_Set_Font(fontHead_t *newFont );
 void ssd1306_PutC(char c );
 void ssd1306_PutSTR(char *str );
+
+
 void ssd1306_Draw_Circle(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius, ssd1306_color_t color, ssd1306_circle_corners corner);
 void ssd1306_Draw_Circle_Filled(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius, ssd1306_color_t color, ssd1306_circle_corners corner);
-void ssd1306_Draw_Rect_Round(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_t height, uint8_t radius, ssd1306_circle_corners corners, ssd1306_color_t color );
-void ssd1306_Draw_Rect_Round_filled(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_t height, uint8_t radius, ssd1306_circle_corners corners, ssd1306_color_t color );
+
 #endif /* SSD1306_H_ */

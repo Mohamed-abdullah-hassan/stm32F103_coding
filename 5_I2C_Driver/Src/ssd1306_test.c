@@ -568,7 +568,7 @@ void ssd1306_Test_Rect()
 	p3.x_point = 108;
 	p3.y_point = 31;
 
-	ssd1306_Draw_Rectangle(p0, p1, p2, p3, ssd1306_color_White);
+	ssd1306_Draw_Quadrila(p0, p1, p2, p3, ssd1306_color_White);
 //	ssd1306_I2C_Write_Frame();
 	ssd1306_Write_Partial_Frame();
 	delay();
@@ -576,7 +576,7 @@ void ssd1306_Test_Rect()
 	volatile double tt = sqrt(121);
 	p0.x_point = (uint8_t) tt;
 	p0.y_point = (uint8_t) tt;
-	ssd1306_Draw_Rectangle(p0, p1, p2, p3, ssd1306_color_White);
+	ssd1306_Draw_Quadrila(p0, p1, p2, p3, ssd1306_color_White);
 //	ssd1306_I2C_Write_Frame();
 	ssd1306_Write_Partial_Frame();
 	delay2();
@@ -685,8 +685,8 @@ void ssd1306_Test_Draw_Image2()
 	}
 	ssd1306_Write_Partial_Frame();
 	delay();
-	ssd1306_Draw_Bitmap2(0, 0, peugeot, 64, 64, ssd1306_pixel_XOR);
-	ssd1306_Draw_Bitmap2(64, 0, peugeot, 64, 64, ssd1306_pixel_AND);
+	ssd1306_Draw_Bitmap_PO(0, 0, peugeot, 64, 64, ssd1306_pixel_XOR);
+	ssd1306_Draw_Bitmap_PO(64, 0, peugeot, 64, 64, ssd1306_pixel_AND);
 	ssd1306_Write_Partial_Frame();
 	delay();
 }
