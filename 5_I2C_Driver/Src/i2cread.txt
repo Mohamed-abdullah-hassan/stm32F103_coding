@@ -1,0 +1,45 @@
+Case of a single byte to be received:
+    After ADDR bit in SR1 is set, clear ACK bit in CR1 register.
+    Read SR1, and SR2.
+    Set STOP bit in CR1 register.
+    wait untill RXNE bit is set in SR1 register.
+    Read the DR register.
+
+Case of two bytes to be received:
+    Set POS bit in CR1 register "this tells the mcu that ACK will be applied for the following byte after the current transfer"
+    Set ACK bit in CR1 register.
+    wait for ADDR bit in SR1 is set.
+    Clear ADDR bit by reading SR1, and SR2.
+    Clear ACK bit in CR1 register.
+    wait for BTF bit is set in SR1.
+    Set STOP bit in CR1 register.
+    Read DR register 2 times.
+
+
+Case of more than two bytes to be received:
+    When 3 bytes remain to be read:
+        wait for RxNE bit in SR1 register is set.
+        DON'T read DR register. "currently holding DataN-2 byte
+        After the 2nd byte received.
+        BTF bit in SR1 register will be Set "means that the current DR regiter hold un read byte, and there is another byte waiting inside the shift register.
+        The prepheral will automatically hold the SCL to LOW to prevent further data transmition.
+        Clear ACK bit in CR1.
+        Read DR register which is holding DataN-2 
+        now the prepheral will resume reciving DataN "last byte", and the will send NACK.
+        Set STOP bit in CR1 register.
+        read DR register which is holding DataN-1
+        wait until RxNE bit in SR1 register is SET.
+        read DR register which is holding DataN "last Byte" 
+
+
+1. To generate the nonacknowledge pulse after the last received data byte, the ACK bit
+must be cleared just after reading the second last data byte (after second last RxNE
+event).
+
+2. To generate the Stop/Restart condition, software must set the STOP/START bit just
+after reading the second last data byte (after the second last RxNE event).
+
+3. In case a single byte has to be received, the Acknowledge disable and the Stop
+condition generation are made just after EV6 (in EV6_1, just after ADDR is cleared).
+After the Stop condition generation, the interface goes automatically back to slave mode
+(MSL bit cleared).

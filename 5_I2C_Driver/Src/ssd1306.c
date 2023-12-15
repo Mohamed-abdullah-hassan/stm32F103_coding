@@ -1,20 +1,19 @@
-#include "I2C.h"
-// #include "string.h"
+#include <oI2C.h>
 #include "ssd1306.h"
 
 /*       OLED Display routine
  * SSD1306 commands moving to seperate file after testing
  */
-#define SSD1306_I2C_ADDR 0x78
-#define SSD1306_RIGHT_HORIZONTAL_SCROLL 0x26
-#define SSD1306_LEFT_HORIZONTAL_SCROLL 0x27
-#define SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL 0x29
-#define SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL 0x2A
-#define SSD1306_DEACTIVATE_SCROLL 0x2E		  // Stop scroll
-#define SSD1306_ACTIVATE_SCROLL 0x2F		  // Start scroll
-#define SSD1306_SET_VERTICAL_SCROLL_AREA 0xA3 // Set scroll range
-#define SSD1306_NORMALDISPLAY 0xA6
-#define SSD1306_INVERTDISPLAY 0xA7
+#define SSD1306_I2C_ADDR                                0x78
+#define SSD1306_RIGHT_HORIZONTAL_SCROLL                 0x26
+#define SSD1306_LEFT_HORIZONTAL_SCROLL                  0x27
+#define SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL    0x29
+#define SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL     0x2A
+#define SSD1306_DEACTIVATE_SCROLL                       0x2E	// Stop scroll
+#define SSD1306_ACTIVATE_SCROLL                         0x2F	// Start scroll
+#define SSD1306_SET_VERTICAL_SCROLL_AREA                0xA3    // Set scroll range
+#define SSD1306_NORMALDISPLAY                           0xA6
+#define SSD1306_INVERTDISPLAY                           0xA7
 
 /*
  * SSD1306 Display Macros
@@ -34,6 +33,11 @@ struct __display_Buffer
 	uint8_t x_Col_Start;
 	uint8_t x_Col_End;
 	uint8_t Frame[SSD1306_Display_Pages * SSD1306_Display_Width];
+	uint8_t enable_Window_Write;
+	uint8_t window_x_Start;
+	uint8_t window_y_Start;
+	uint8_t window_x_End;
+	uint8_t window_y_End;
 } display_Buffer;
 
 struct __cursor
@@ -44,11 +48,11 @@ struct __cursor
 
 fontHead_t * font;
 
-enum __cursor_step
+typedef enum __cursor_step
 {
 	step_left = 0x00, step_Right, step_Down, step_Up, step_Most_left, step_Most_Up,
-};
-typedef uint8_t cursor_step;
+}cursor_step;
+
 
 /**************************************************************************/
 /*
@@ -56,7 +60,8 @@ typedef uint8_t cursor_step;
 */
 /**************************************************************************/
 const uint8_t ssd1306_init[] =
-	{ (0xAE),     // display off
+	{
+	  (0xAE),     // display off
 	  (0x20),     // Set Memory Addressing Mode
 	  (0x10),     // 00,Horizontal Addressing Mode;01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
 	  (0xB0),     // Set Page Start Address for Page Addressing Mode,0-7
@@ -84,7 +89,8 @@ const uint8_t ssd1306_init[] =
 	  (0x8D),     //--set DC-DC enable
 	  (0x14),     //
 	  (0xAF),     //--turn on SSD1306 panel
-	  (SSD1306_DEACTIVATE_SCROLL) };
+	  (SSD1306_DEACTIVATE_SCROLL)
+	};
 
 /*
  * SSD1306 Display Functions
@@ -103,12 +109,17 @@ void ssd1306_I2C_Init( )
 	for (uint8_t i = 0; i < sizeof(ssd1306_init); i++)
 		i2c1_write(ssd1306_init[i]);
 	i2c1_End();
-	display_Buffer.x_Col_End = 0x00;
-	display_Buffer.y_Page_End = 0x00;
-	display_Buffer.x_Col_Start = SSD1306_Display_Height - 1;
-	display_Buffer.y_Page_Start = SSD1306_Display_Width - 1;
-	textCursor.x_text = 0;
-	textCursor.y_text = 0;
+	display_Buffer.x_Col_End            = 0x00;
+	display_Buffer.y_Page_End           = 0x00;
+	display_Buffer.x_Col_Start          = SSD1306_Display_Height - 1;
+	display_Buffer.y_Page_Start         = SSD1306_Display_Width - 1;
+	textCursor.x_text                   = 0;
+	textCursor.y_text                   = 0;
+	display_Buffer.enable_Window_Write  = 0;
+	display_Buffer.window_x_End         = 0;
+	display_Buffer.window_x_Start       = 0;
+	display_Buffer.window_y_End         = 0;
+	display_Buffer.window_y_Start       = 0;
 }
 
 /************************************************************************/
@@ -131,9 +142,7 @@ void ssd1306_I2C_Write(uint8_t address , uint8_t reg , uint8_t data )
 /************************************************************************/
 void ssd1306_I2C_Clear(void )
 {
-	uint8_t m;
-
-	for (m = 0; m < 8; m++)
+    for (uint8_t m = 0; m < 8; m++)
 	{
 		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
 		i2c1_write(0xB0 + m);
@@ -156,9 +165,7 @@ void ssd1306_I2C_Clear(void )
 /************************************************************************/
 void ssd1306_I2C_Set(void )
 {
-	uint8_t m;
-
-	for (m = 0; m < 8; m++)
+	for (uint8_t m = 0; m < 8; m++)
 	{
 		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
 		i2c1_write(0xB0 + m);
@@ -167,7 +174,9 @@ void ssd1306_I2C_Set(void )
 		i2c1_End();
 		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
 		for (uint8_t i = 0; i < 128; i++)
-			i2c1_write(0xFF);
+		{
+		    i2c1_write(0xFF);
+		}
 		i2c1_End();
 	}
 }
@@ -182,9 +191,7 @@ void ssd1306_I2C_Set(void )
 /************************************************************************/
 void ssd1306_I2C_Fill(uint8_t pattern )
 {
-	uint8_t m;
-
-	for (m = 0; m < 8; m++)
+	for (uint8_t m = 0; m < 8; m++)
 	{
 		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
 		i2c1_write(0xB0 + m);
@@ -193,7 +200,9 @@ void ssd1306_I2C_Fill(uint8_t pattern )
 		i2c1_End();
 		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
 		for (uint8_t i = 0; i < 128; i++)
-			i2c1_write(pattern);
+		{
+		    i2c1_write(pattern);
+		}
 		i2c1_End();
 	}
 }
@@ -208,8 +217,7 @@ void ssd1306_I2C_Fill(uint8_t pattern )
 /************************************************************************/
 void ssd1306_I2C_Fill_char(uint8_t pattern )
 {
-	uint8_t m;
-	for (m = 0; m < 8; m++)
+	for (uint8_t m = 0; m < 8; m++)
 	{
 		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
 		i2c1_write(0xB0 + m);
@@ -239,12 +247,30 @@ void ssd1306_I2C_Fill_char(uint8_t pattern )
 /************************************************************************/
 void ssd1306_Update_frame_XPage_boundaries(uint8_t x_Pos , uint8_t page )
 {
-	if (x_Pos >= SSD1306_Display_Width) x_Pos = SSD1306_Display_Width - 1;
-	if (page >= SSD1306_Display_Pages) page = SSD1306_Display_Pages - 1;
-	if (display_Buffer.x_Col_Start > x_Pos) display_Buffer.x_Col_Start = x_Pos;
-	if (display_Buffer.y_Page_Start > page) display_Buffer.y_Page_Start = page;
-	if (display_Buffer.x_Col_End < x_Pos) display_Buffer.x_Col_End = x_Pos;
-	if (display_Buffer.y_Page_End < page) display_Buffer.y_Page_End = page;
+	if (x_Pos >= SSD1306_Display_Width)
+	{
+	    x_Pos = SSD1306_Display_Width - 1;
+	}
+	if (page >= SSD1306_Display_Pages)
+	{
+	    page = SSD1306_Display_Pages - 1;
+	}
+	if (display_Buffer.x_Col_Start > x_Pos)
+	{
+	    display_Buffer.x_Col_Start = x_Pos;
+	}
+	if (display_Buffer.y_Page_Start > page)
+	{
+	    display_Buffer.y_Page_Start = page;
+	}
+	if (display_Buffer.x_Col_End < x_Pos)
+	{
+	    display_Buffer.x_Col_End = x_Pos;
+	}
+	if (display_Buffer.y_Page_End < page)
+    {
+	    display_Buffer.y_Page_End = page;
+    }
 }
 
 /************************************************************************/
@@ -260,9 +286,11 @@ void ssd1306_Update_frame_XPage_boundaries(uint8_t x_Pos , uint8_t page )
 /************************************************************************/
 void ssd1306_Update_frame_XY_boundaries(uint8_t x_Pos , uint8_t y_Pos )
 {
-	if (y_Pos >= SSD1306_Display_Height) y_Pos = SSD1306_Display_Height - 1;
-	uint8_t page = (uint8_t) (y_Pos / 8);
-	ssd1306_Update_frame_XPage_boundaries(x_Pos, page);
+	if (y_Pos >= SSD1306_Display_Height)
+    {
+	    y_Pos = SSD1306_Display_Height - 1;
+    }
+	ssd1306_Update_frame_XPage_boundaries(x_Pos, (y_Pos / 8) );
 }
 
 /************************************************************************/
@@ -273,9 +301,9 @@ void ssd1306_Update_frame_XY_boundaries(uint8_t x_Pos , uint8_t y_Pos )
 /************************************************************************/
 void ssd1306_Reset_boundaries()
 {
-	display_Buffer.x_Col_End = 0x00;
-	display_Buffer.y_Page_End = 0x00;
-	display_Buffer.x_Col_Start = SSD1306_Display_Height - 1;
+	display_Buffer.x_Col_End    = 0x00;
+	display_Buffer.y_Page_End   = 0x00;
+	display_Buffer.x_Col_Start  = SSD1306_Display_Height - 1;
 	display_Buffer.y_Page_Start = SSD1306_Display_Width - 1;
 }
 
@@ -291,7 +319,7 @@ void ssd1306_Reset_boundaries()
 /************************************************************************/
 void ssd1306_Directframe_Set(uint16_t indx , uint8_t data )
 {
-	if (indx < sizeof(display_Buffer.Frame))
+	if ( indx < sizeof( display_Buffer.Frame ) )
 	{
 		display_Buffer.Frame[indx] = data;
 		ssd1306_Update_frame_XPage_boundaries(indx % SSD1306_Display_Width,
@@ -324,10 +352,7 @@ uint8_t ssd1306_Directframe_Get(uint16_t indx)
 /************************************************************************/
 void ssd1306_Write_Partial_Frame( )
 {
-	uint8_t m;
-	uint16_t idx = 0;
-
-	for (m = display_Buffer.y_Page_Start; m <= display_Buffer.y_Page_End; m++)
+	for (uint8_t m = display_Buffer.y_Page_Start; m <= display_Buffer.y_Page_End; m++)
 	{
 		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x00);
 		i2c1_write(0xB0 + m);
@@ -337,8 +362,7 @@ void ssd1306_Write_Partial_Frame( )
 		i2c1_Write_Begin(SSD1306_I2C_ADDR, 0x40);
 		for (uint8_t i = display_Buffer.x_Col_Start; i <= display_Buffer.x_Col_End; i++)
 		{
-			idx = (128 * m) + i;
-			i2c1_write(display_Buffer.Frame[idx]);
+			i2c1_write(display_Buffer.Frame[( (128 * m) + i )]);
 		}
 		i2c1_End();
 	}
@@ -360,9 +384,9 @@ void ssd1306_Clear_Frame( )
 	{
 		display_Buffer.Frame[i] = 0x00;
 	}
-	display_Buffer.x_Col_End = SSD1306_Display_Width - 1;
-	display_Buffer.y_Page_End = SSD1306_Display_Pages - 1;
-	display_Buffer.x_Col_Start = 0x00;
+	display_Buffer.x_Col_End    = SSD1306_Display_Width - 1;
+	display_Buffer.y_Page_End   = SSD1306_Display_Pages - 1;
+	display_Buffer.x_Col_Start  = 0x00;
 	display_Buffer.y_Page_Start = 0x00;
 }
 
@@ -376,7 +400,7 @@ void ssd1306_Fill_buffer(uint8_t pattern )
 {
 	for (uint16_t i = 0; i < sizeof(display_Buffer.Frame); i += 2)
 	{
-		display_Buffer.Frame[i] = 0x00;
+		display_Buffer.Frame[i]     = 0x00;
 		display_Buffer.Frame[i + 1] = pattern;
 	}
 }
@@ -399,8 +423,25 @@ void ssd1306_Fill_buffer(uint8_t pattern )
 void ssd1306_Pixel_Set(uint8_t x_Pos , uint8_t y_Pos , ssd1306_pixel_op operation , ssd1306_color_t color )
 {
 	/* Check of one of the coordinates is out of boundaries*/
-	if (x_Pos >= SSD1306_Display_Width) return;
-	if (y_Pos >= SSD1306_Display_Height) return;
+	if (x_Pos >= SSD1306_Display_Width)
+    {
+	    return;
+    }
+	if (y_Pos >= SSD1306_Display_Height)
+    {
+	    return;
+    }
+	if (display_Buffer.enable_Window_Write)
+	{
+		if((x_Pos < display_Buffer.window_x_Start) || (x_Pos > display_Buffer.window_x_End))
+		{
+		    return;
+		}
+		if((y_Pos < display_Buffer.window_y_Start) || (y_Pos > display_Buffer.window_y_End))
+        {
+		    return;
+        }
+	}
 
 	/* Calculate the index of the pixel in frame buffer*/
 	/* Get the page number 0 ~ 7*/
@@ -414,25 +455,39 @@ void ssd1306_Pixel_Set(uint8_t x_Pos , uint8_t y_Pos , ssd1306_pixel_op operatio
 	if (operation == ssd1306_pixel_Set)
 	{
 		if (color == ssd1306_color_White) /*Set the pixel*/
-			display_Buffer.Frame[(page * 128) + x_Pos] |= (temp);
+        {
+		    display_Buffer.Frame[(page * 128) + x_Pos] |= (temp);
+        }
 		else
-			display_Buffer.Frame[(page * 128) + x_Pos] &= ~(temp);
+		{
+		    display_Buffer.Frame[(page * 128) + x_Pos] &= ~(temp);
+		}
 	}
 	else if (operation == ssd1306_pixel_OR)
 	{
-		if (color == ssd1306_color_White) display_Buffer.Frame[(page * 128) + x_Pos] |= (temp);
+		if (color == ssd1306_color_White)
+		{
+		    display_Buffer.Frame[(page * 128) + x_Pos] |= (temp);
+		}
 	}
 	else if (operation == ssd1306_pixel_AND)
 	{
-		if (color == ssd1306_color_Black) display_Buffer.Frame[(page * 128) + x_Pos] &= ~(temp);
+		if (color == ssd1306_color_Black)
+		{
+		    display_Buffer.Frame[(page * 128) + x_Pos] &= ~(temp);
+		}
 	}
 	else if (operation == ssd1306_pixel_XOR)
 	{
 		uint8_t new = display_Buffer.Frame[(page * 128) + x_Pos] & temp;
 		if (color == ssd1306_color_White)
-			new ^= temp;
+		{
+		    new ^= temp;
+		}
 		else
-			new ^= 0x00;
+		{
+		    new ^= 0x00;
+		}
 		display_Buffer.Frame[(page * 128) + x_Pos] = ((display_Buffer.Frame[(page * 128) + x_Pos]
 		        & (~temp))| new);
 	}
@@ -455,31 +510,78 @@ void ssd1306_Pixel_Set(uint8_t x_Pos , uint8_t y_Pos , ssd1306_pixel_op operatio
 /******************************************************************************************/
 void ssd1306_Draw_Pixel(uint8_t x_Pos , uint8_t y_Pos , ssd1306_color_t color )
 {
-	/* Check of one of the coordinates is out of boundaries*/
-	if (x_Pos >= SSD1306_Display_Width) return;
-	if (y_Pos >= SSD1306_Display_Height) return;
-	uint8_t temp = 0;
-	uint8_t data = 0; /*For more explaining of the code */
+	ssd1306_Pixel_Set(x_Pos, y_Pos, ssd1306_pixel_Set,color);
+//	/* Check of one of the coordinates is out of boundaries*/
+//	if (x_Pos >= SSD1306_Display_Width) return;
+//	if (y_Pos >= SSD1306_Display_Height) return;
+//	uint8_t temp = 0;
+//	uint8_t data = 0; /*For more explaining of the code */
+//
+//	/* Calculate the index of the pixel in frame buffer*/
+//	/* Get the page number 0 ~ 7*/
+//	temp = (uint8_t) (y_Pos / 8);
+//
+//	/* Load the correct address*/
+//	uint16_t idx = (temp * 128) + x_Pos;
+//	data = display_Buffer.Frame[idx];
+//
+//	/* Calculate the bit number of the pixel in the byte*/
+//	uint8_t temp2 = (y_Pos % 8);
+//
+//	/*Set or clear the pixel according to color*/
+//	if (color == ssd1306_color_White) /*Set the pixel*/
+//		data |= (1 << temp2);
+//	else
+//		data &= ~(1 << temp2);
+//
+//	display_Buffer.Frame[idx] = data;
+//	ssd1306_Update_frame_XY_boundaries(x_Pos, y_Pos);
+}
 
-	/* Calculate the index of the pixel in frame buffer*/
-	/* Get the page number 0 ~ 7*/
-	temp = (uint8_t) (y_Pos / 8);
 
-	/* Load the correct address*/
-	uint16_t idx = (temp * 128) + x_Pos;
-	data = display_Buffer.Frame[idx];
-
-	/* Calculate the bit number of the pixel in the byte*/
-	uint8_t temp2 = (y_Pos % 8);
-
-	/*Set or clear the pixel according to color*/
-	if (color == ssd1306_color_White) /*Set the pixel*/
-		data |= (1 << temp2);
+/******************************************************************************************/
+/*
+    @brief  Defines window for pixel setting is allowed
+    @param	x_Start		Window top left X Position
+    @param	y_Pos		Window top left Y Position
+    @param	x_end		Window bottom right X Position
+    @param	y_end		Window bottom right Y Position
+    @tag	SSD1306 Graphics - Pixel Operation
+*/
+/******************************************************************************************/
+void ssd1306_Set_Draw_Window(uint8_t x_start, uint8_t y_start,uint8_t x_end, uint8_t y_end)
+{
+	if (x_start > x_end)
+	{
+	    return;
+	}
+	else if (y_start > y_end)
+    {
+	    return;
+    }
 	else
-		data &= ~(1 << temp2);
+	{
+		display_Buffer.window_x_Start = x_start;
+		display_Buffer.window_x_End = x_end;
+		display_Buffer.window_y_Start = y_start;
+		display_Buffer.window_y_End = y_end;
+		display_Buffer.enable_Window_Write = 1;
+	}
+}
 
-	display_Buffer.Frame[idx] = data;
-	ssd1306_Update_frame_XY_boundaries(x_Pos, y_Pos);
+/******************************************************************************************/
+/*
+    @brief  Clears window drawing restriction
+    @tag	SSD1306 Graphics - Pixel Operation
+*/
+/******************************************************************************************/
+void ssd1306_Reset_Draw_Window(void)
+{
+	display_Buffer.window_x_Start       = 0;
+	display_Buffer.window_x_End         = 0;
+	display_Buffer.window_y_Start       = 0;
+	display_Buffer.window_y_End         = 0;
+	display_Buffer.enable_Window_Write  = 0;
 }
 
 /******************************************************************************************/
@@ -500,7 +602,28 @@ void ssd1306_Draw_Line_H(uint8_t x_Start , uint8_t y_Start , uint8_t width , ssd
 	/*Not Implemented*/
 
 	/* Check if the coordinates is out of display*/
-	if ((y_Start > 63) || (x_Start > 127)) return;
+	if ((y_Start > 63) || (x_Start > 127))
+    {
+	    return;
+    }
+
+	/*Check if the line is within drawing window*/
+	if(display_Buffer.enable_Window_Write)
+	{
+		if ((y_Start < display_Buffer.window_y_Start) || (y_Start > display_Buffer.window_y_End))
+		{
+		    return;
+		}
+		if(x_Start < display_Buffer.window_x_Start)
+		{
+		    x_Start = display_Buffer.window_x_Start;
+		}
+		if((x_Start + width) > display_Buffer.window_x_End)
+		{
+		    width = display_Buffer.window_x_End - x_Start;
+		}
+	}
+
 
 	/*Check if the line runs outside the screen boundaries and crop if true*/
 	if ((x_Start + width) > 128)
@@ -509,7 +632,7 @@ void ssd1306_Draw_Line_H(uint8_t x_Start , uint8_t y_Start , uint8_t width , ssd
 	}
 
 	/* Calculate the Page Number in display*/
-	uint8_t page = y_Start / 8;
+//	uint8_t page = y_Start / 8;
 
 	/* Calculate the Pixel location in the byte*/
 	uint8_t bit = y_Start % 8;
@@ -519,16 +642,20 @@ void ssd1306_Draw_Line_H(uint8_t x_Start , uint8_t y_Start , uint8_t width , ssd
 
 	/* Get the location of the first byte in the frame buffer*/
 	//	uint8_t * data = &ssd1306_Frame[page * 128 + x_Start];
-	uint8_t * data = &display_Buffer.Frame[page * 128 + x_Start];
-
+//	uint8_t * data = &display_Buffer.Frame[page * 128 + x_Start];
+	uint8_t * data = &display_Buffer.Frame[ (  128 * (y_Start / 8 ) ) + x_Start];
 	ssd1306_Update_frame_XY_boundaries(x_Start, y_Start);
 	ssd1306_Update_frame_XY_boundaries(x_Start + width, y_Start);
 	for (; width > 0; width--)
 	{
 		if (color == ssd1306_color_White)
-			*data |= bit;
+		{
+		    *data |= bit;
+		}
 		else
-			*data &= bit;
+		{
+		    *data &= bit;
+		}
 		data++;
 	}
 }
@@ -548,7 +675,27 @@ void ssd1306_Draw_Line_H(uint8_t x_Start , uint8_t y_Start , uint8_t width , ssd
 void ssd1306_Draw_Line_V(uint8_t x_Start , uint8_t y_Start , uint8_t height , ssd1306_color_t color )
 {
 	/* Check if the coordinates is out of display*/
-	if ((y_Start > 63) || (x_Start > 127)) return;
+	if ((y_Start > 63) || (x_Start > 127))
+    {
+	    return;
+    }
+
+	/*Check if the line is within drawing window*/
+	if(display_Buffer.enable_Window_Write)
+	{
+		if ((x_Start < display_Buffer.window_x_Start) || (x_Start > display_Buffer.window_x_End))
+		{
+		    return;
+		}
+		if(y_Start < display_Buffer.window_y_Start)
+		{
+		    y_Start = display_Buffer.window_y_Start;
+		}
+		if((y_Start + height) > display_Buffer.window_y_End)
+		{
+		    height = display_Buffer.window_y_End - y_Start;
+		}
+	}
 
 	/*Check if the line runs outside the screen boundaries and crop if true*/
 	if ((y_Start + height) > 64)
@@ -557,11 +704,11 @@ void ssd1306_Draw_Line_V(uint8_t x_Start , uint8_t y_Start , uint8_t height , ss
 	}
 
 	/* Get the Page and bit location*/
-	uint8_t page = y_Start / 8;
-	uint8_t bit = y_Start % 8; /* Indicates the bit location on scale of 0 ~ 7*/
+//	uint8_t page    = y_Start / 8;
+	uint8_t bit     = y_Start % 8; /* Indicates the bit location on scale of 0 ~ 7*/
 
 	/* Get the location of the first byte in the frame buffer*/
-	uint8_t * data = &display_Buffer.Frame[page * 128 + x_Start];
+	uint8_t * data  = &display_Buffer.Frame[ ( 128 * ( y_Start / 8 ) ) + x_Start];
 	uint8_t bitMask = 0xFF;
 
 	ssd1306_Update_frame_XY_boundaries(x_Start, y_Start);
@@ -573,23 +720,31 @@ void ssd1306_Draw_Line_V(uint8_t x_Start , uint8_t y_Start , uint8_t height , ss
 		{
 			bitMask <<= bit;
 			if (color == ssd1306_color_White)
-				*data |= bitMask;
+			{
+			    *data |= bitMask;
+			}
 			else
-				*data &= ~bitMask;
-			height -= (8 - bit);
-			data += 128;
+			{
+			    *data &= ~bitMask;
+			}
+			height  -= (8 - bit);
+			data    += 128;
 		}
 		else
 		{
 			bitMask >>= (8 - height);
 			bitMask <<= bit;
 			if (color == ssd1306_color_White)
-				*data |= bitMask;
+			{
+			    *data |= bitMask;
+			}
 			else
-				*data &= ~bitMask;
+			{
+			    *data &= ~bitMask;
+			}
 			height = 0;
 		}
-		bit = 0;
+		bit     = 0;
 		bitMask = 0xFF;
 	}
 }
@@ -608,10 +763,22 @@ void ssd1306_Draw_Line_V(uint8_t x_Start , uint8_t y_Start , uint8_t height , ss
 void ssd1306_Draw_Line(uint8_t x0 , uint8_t y0 , uint8_t x1 , uint8_t y1 , ssd1306_color_t color )
 {
 	/* Check if any of the point is out of the display area and crop it*/
-	if (x0 >= SSD1306_Display_Width) x0 = SSD1306_Display_Width - 1;
-	if (x1 >= SSD1306_Display_Width) x1 = SSD1306_Display_Width - 1;
-	if (y0 >= SSD1306_Display_Height) y0 = SSD1306_Display_Height - 1;
-	if (y1 >= SSD1306_Display_Height) y1 = SSD1306_Display_Height - 1;
+	if (x0 >= SSD1306_Display_Width)
+    {
+	    x0 = SSD1306_Display_Width - 1;
+    }
+	if (x1 >= SSD1306_Display_Width)
+    {
+	    x1 = SSD1306_Display_Width - 1;
+    }
+	if (y0 >= SSD1306_Display_Height)
+    {
+	    y0 = SSD1306_Display_Height - 1;
+    }
+	if (y1 >= SSD1306_Display_Height)
+    {
+	    y1 = SSD1306_Display_Height - 1;
+    }
 
 	int16_t dx;     //= (x1 - x0);
 	int16_t dy;     //= -(y1 - y0);
@@ -721,7 +888,7 @@ void ssd1306_Draw_Quadrila(ssd1306_point P0 , ssd1306_point P1 , ssd1306_point p
     @param	width		rectangle width
     @param	height		rectangle height
     @param	radius		the radius of the rounded edges
-     @param	corner		corners of the rectangle to be drawn,
+    @param	corner		corners of the rectangle to be drawn,
 			ssd1306_circle_quarter_top_left, ssd1306_circle_quarter_top_right,
 			ssd1306_circle_quarter_bot_Left,ssd1306_circle_quarter_bot_right,
 			ssd1306_circle_half_ver_left,ssd1306_circle_half_ver_right,
@@ -736,11 +903,24 @@ void ssd1306_Draw_Rect_Round(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_
 {
 	if(width < (2 * radius)) return;
 	if (height < (2* radius)) return;
-	uint8_t x1,x2,x3,x4,y1,y2,y3,y4;
-	x1 = x2 = x_Pos;
-	x3 = x4 = x_Pos + width;
-	y1 = y2 = y_Pos;
-	y3 = y4 = y_Pos + height;
+	uint8_t x1;
+	uint8_t x2;
+	uint8_t x3;
+	uint8_t x4;
+	uint8_t y1;
+	uint8_t y2;
+	uint8_t y3;
+	uint8_t y4;
+
+	x1 = x_Pos;
+	x2 = x_Pos;
+	x3 = x_Pos + width;
+	x4 = x_Pos + width;
+	y1 = y_Pos;
+	y2 = y_Pos;
+	y3 = y_Pos + height;
+	y4 = y_Pos + height;
+
 	if(corners & ssd1306_circle_quarter_top_left)
 	{
 		x1 += radius;
@@ -770,7 +950,6 @@ void ssd1306_Draw_Rect_Round(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_
 	ssd1306_Draw_Line_V(x_Pos, y1, (y3 - y1), color);
 	ssd1306_Draw_Line_H(x2, y_Pos+ height, (x4 - x2), color);
 	ssd1306_Draw_Line_V(x_Pos + width, y2, (y4 - y2), color);
-
 }
 
 /******************************************************************************************/
@@ -781,12 +960,12 @@ void ssd1306_Draw_Rect_Round(uint8_t x_Pos, uint8_t y_Pos, uint8_t width, uint8_
     @param	width		rectangle width
     @param	height		rectangle height
     @param	radius		the radius of the rounded edges
-     @param	corner		corners of the rectangle to be drawn,
-			ssd1306_circle_quarter_top_left, ssd1306_circle_quarter_top_right,
-			ssd1306_circle_quarter_bot_Left,ssd1306_circle_quarter_bot_right,
-			ssd1306_circle_half_ver_left,ssd1306_circle_half_ver_right,
-			ssd1306_circle_half_hor_top,ssd1306_circle_half_hor_bot,
-			ssd1306_circle_full.
+    @param	corner		corners of the rectangle to be drawn,
+                ssd1306_circle_quarter_top_left, ssd1306_circle_quarter_top_right,
+                ssd1306_circle_quarter_bot_Left,ssd1306_circle_quarter_bot_right,
+                ssd1306_circle_half_ver_left,ssd1306_circle_half_ver_right,
+                ssd1306_circle_half_hor_top,ssd1306_circle_half_hor_bot,
+                ssd1306_circle_full.
     @param	color 	Black or white pixel
     @note	if height or width < 2 * radius the drawing is canceled
     @tag	SSD1306 Graphics - Rectangle Operation
@@ -796,13 +975,27 @@ void ssd1306_Draw_Rect_Round_filled(uint8_t x_Pos, uint8_t y_Pos, uint8_t width,
 {
 //	if(width < (2 * radius)) radius = width >>1;
 //	if (height < (2* radius)) radius = height >>1;
-	if(width < (2 * radius)) return;
-	if (height < (2* radius)) return;
-	uint8_t x1,x2,x3,x4,y1,y2,y3,y4;
-	x1 = x2 = x_Pos;
-	x3 = x4 = x_Pos + width;
-	y1 = y2 = y_Pos;
-	y3 = y4 = y_Pos + height;
+//	if(width < (2 * radius)) return;
+//	if (height < (2* radius)) return;
+	ssd1306_Set_Draw_Window(x_Pos, y_Pos, x_Pos+width, y_Pos+height);
+    uint8_t x1;
+    uint8_t x2;
+    uint8_t x3;
+    uint8_t x4;
+    uint8_t y1;
+    uint8_t y2;
+    uint8_t y3;
+    uint8_t y4;
+
+    x1 = x_Pos;
+    x2 = x_Pos;
+    x3 = x_Pos + width;
+    x4 = x_Pos + width;
+    y1 = y_Pos;
+    y2 = y_Pos;
+    y3 = y_Pos + height;
+    y4 = y_Pos + height;
+
 	if(corners & ssd1306_circle_quarter_top_left)
 	{
 		x1 += radius;
@@ -828,31 +1021,74 @@ void ssd1306_Draw_Rect_Round_filled(uint8_t x_Pos, uint8_t y_Pos, uint8_t width,
 		ssd1306_Draw_Circle_Filled(x4, y4, radius, color,ssd1306_circle_quarter_bot_right);
 	}
 
-	uint8_t x_temp=0, y_temp=0;
-	if(y2 >= y1)	y_temp = y2;
-	else y_temp = y1;
+	uint8_t x_temp=0;
+	uint8_t y_temp=0;
+	if(y2 >= y1)
+    {
+	    y_temp = y2;
+    }
+	else
+	{
+	    y_temp = y1;
+	}
 	ssd1306_Draw_Recangle_Filled(x1, y_Pos, x3, y_temp, color);
 
-	if(x2 >= x1) x_temp = x2;
-	else x_temp = x1;
+	if(x2 >= x1)
+    {
+	    x_temp = x2;
+    }
+	else
+    {
+	    x_temp = x1;
+    }
 	ssd1306_Draw_Recangle_Filled(x_Pos, y1, x_temp, y3, color);
 
-	if(x4 >= x3) x_temp = x3;
-	else x_temp = x4;
+	if(x4 >= x3)
+    {
+	    x_temp = x3;
+    }
+	else
+    {
+	    x_temp = x4;
+    }
 	ssd1306_Draw_Recangle_Filled(x_temp, y2, x_Pos + width, y4, color);
 
-	if(y4 >= y3)	y_temp = y3;
-	else y_temp = y4;
+	if(y4 >= y3)
+    {
+	    y_temp = y3;
+    }
+	else
+    {
+	    y_temp = y4;
+    }
 	ssd1306_Draw_Recangle_Filled(x2, y_temp, x4, y_Pos + height, color);
 
-	if(y2 >= y1)	y_temp = y1;
-	else y_temp = y2;
-	if(x1 >= x2) x_temp = x1;
-	else x_temp = x2;
-	if(x3 < x4) x4 = x3;
-	if(y4 > y3)	y4 = y3;
-
+	if(y2 >= y1)
+    {
+	    y_temp = y1;
+    }
+	else
+    {
+	    y_temp = y2;
+    }
+	if(x1 >= x2)
+    {
+	    x_temp = x1;
+    }
+	else
+    {
+	    x_temp = x2;
+    }
+	if(x3 < x4)
+    {
+	    x4 = x3;
+    }
+	if(y4 > y3)
+    {
+	    y4 = y3;
+    }
 	ssd1306_Draw_Recangle_Filled(x_temp, y_temp, x4, y4, color);
+	ssd1306_Reset_Draw_Window();
 }
 
 
@@ -880,8 +1116,10 @@ void ssd1306_Draw_Bitmap(uint8_t x_start , uint8_t y_start , const uint8_t *imag
 		x = x_start;
 		while (w > 0)
 		{
-			ssd1306_Draw_Pixel(x++, y_start,
-			                   ((data & (1 << 7)) ? ssd1306_color_White : ssd1306_color_Black));
+//			ssd1306_Draw_Pixel(x++, y_start,
+//			                   ((data & (1 << 7)) ? ssd1306_color_White : ssd1306_color_Black));
+			ssd1306_Pixel_Set(x++, y_start, ssd1306_pixel_Set,
+						                  ((data & (1 << 7)) ? ssd1306_color_White : ssd1306_color_Black));
 			data <<= 1;
 			xbit++;
 			if (xbit > 7)
@@ -962,7 +1200,10 @@ void ssd1306_Set_Cursor(uint8_t xPos , uint8_t yPos )
 /******************************************************************************************/
 void ssd1306_Set_Font(fontHead_t *newFont )
 {
-	if (newFont) font = newFont;
+	if (newFont)
+    {
+	    font = newFont;
+    }
 }
 
 /******************************************************************************************/
@@ -980,8 +1221,8 @@ void ssd1306_Step_Cursor(cursor_step dir )
 	uint8_t value;
 	if (dir == step_left)
 	{
-		value = font->charWidth + font->charSpace;
-		textCursor.x_text += value;
+		value               = font->charWidth + font->charSpace;
+		textCursor.x_text   += value;
 		if (textCursor.x_text >= SSD1306_Display_Width)
 		{
 			ssd1306_Step_Cursor(step_Most_left);
@@ -999,7 +1240,7 @@ void ssd1306_Step_Cursor(cursor_step dir )
 	else if (dir == step_Down)
 	{
 		value = font->charHeigh + font->charSpace;
-		textCursor.y_text += value;
+		textCursor.y_text   += value;
 		if (textCursor.y_text >= SSD1306_Display_Height)
 		{
 			ssd1306_Step_Cursor(step_Most_Up);
@@ -1033,20 +1274,26 @@ void ssd1306_PutC(char c )
 
 	// The start of printable characters in ASCII table begins with space
 	// Check if the received character is printable
-	if (c < ' ') return;
+	if (c < ' ')
+    {
+	    return;
+    }
 	// Subtracting (' ', 0x20, or 32) from the received char to define the position of the character in the table
 	c -= 0x20;
 	// The standard ASCII table contains 95 printable characters, but some fonts has some custom glyph at the end.
 	// check if the character exist in the font
-	if (c >= font->count) return;
+	if (c >= font->count)
+    {
+	    return;
+    }
 	// The orientation of the font data is by rows "vertical"
 	// Define the length of each row in Bytes
 	uint8_t colBytes = ((uint8_t) (font->charHeigh - 1) / 8);     // number of bytes for each column
 	// if the font height is (1-8) bits then the number of bytes is 1, and if its (9 - 16) bits then the number of Bytes is 2, and so on
 	colBytes++;
 	// Get the position of the Character first byte
-	uint16_t idx;
-	uint8_t data = 0;
+	uint16_t    idx;
+	uint8_t     data = 0;
 	if ((textCursor.x_text + font->charWidth) >= SSD1306_Display_Width)
 	{
 		ssd1306_Step_Cursor(step_Most_left);
@@ -1061,13 +1308,20 @@ void ssd1306_PutC(char c )
 		{
 			for (uint8_t y = 0; y < font->charHeigh; y++)
 			{
-				if ((y % 8) == 0) data = font->font[idx++];
+				if ((y % 8) == 0)
+				{
+				    data = font->font[idx++];
+				}
 				if (data & 0x01)
-					ssd1306_Pixel_Set(textCursor.x_text + x, textCursor.y_text + y,
+				{
+				    ssd1306_Pixel_Set(textCursor.x_text + x, textCursor.y_text + y,
 					                  ssd1306_pixel_Set, ssd1306_color_White);
+				}
 				else
-					ssd1306_Pixel_Set(textCursor.x_text + x, textCursor.y_text + y,
+				{
+				    ssd1306_Pixel_Set(textCursor.x_text + x, textCursor.y_text + y,
 					                  ssd1306_pixel_Set, ssd1306_color_Black);
+				}
 				data >>= 1;
 			}
 		}
@@ -1080,18 +1334,24 @@ void ssd1306_PutC(char c )
 		idx = charSize * c;
 
 		for (uint8_t i = 0; i < font->charHeigh; i++)
+		{
 			for (uint8_t j = 0; j < font->charWidth; j++)
 			{
 				if ((j % 8) == 0) data = font->font[idx++];
 				if (data & 0x80)
-					ssd1306_Pixel_Set(textCursor.x_text + j, textCursor.y_text + i,
+				{
+				    ssd1306_Pixel_Set(textCursor.x_text + j, textCursor.y_text + i,
 					                  ssd1306_pixel_Set, ssd1306_color_White);
+				}
 				else
-					ssd1306_Pixel_Set(textCursor.x_text + j, textCursor.y_text + i,
+				{
+				    ssd1306_Pixel_Set(textCursor.x_text + j, textCursor.y_text + i,
 					                  ssd1306_pixel_Set, ssd1306_color_Black);
+				}
 				data <<= 1;
 
 			}
+		}
 	}
 	if (font->charSpace >0)
 	{
@@ -1145,24 +1405,31 @@ void ssd1306_PutSTR(char *str)
 void ssd1306_Draw_Circle(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius, ssd1306_color_t color, ssd1306_circle_corners corner)
 {
 
-	int16_t f = 1 - radius;
-	int16_t ddF_x = 1;
-	int16_t ddF_y = -2 * radius;
-	int16_t x = 0;
-	int16_t y = radius;
+	int16_t f       = 1 - radius;
+	int16_t ddF_x   = 1;
+	int16_t ddF_y   = -2 * radius;
+	int16_t x       = 0;
+	int16_t y       = radius;
 
 	if ((corner & ssd1306_circle_half_hor_top))
+    {
 	    ssd1306_Pixel_Set(x_Pos, y_Pos - radius, ssd1306_pixel_Set, color);
+    }
 
 	if ((corner & ssd1306_circle_half_ver_right))
+    {
 	    ssd1306_Pixel_Set(x_Pos + radius, y_Pos, ssd1306_pixel_Set, color);
+    }
 
 	if ((corner & ssd1306_circle_half_ver_left))
+    {
 	    ssd1306_Pixel_Set(x_Pos - radius, y_Pos, ssd1306_pixel_Set, color);
+    }
 
 	if ((corner & ssd1306_circle_half_hor_bot))
+    {
 	    ssd1306_Pixel_Set(x_Pos, y_Pos + radius, ssd1306_pixel_Set, color);
-
+    }
 
 	while (x < y)
 	{
@@ -1173,8 +1440,8 @@ void ssd1306_Draw_Circle(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius, ssd130
 			f += ddF_y;
 		}
 		x++;
-		ddF_x += 2;
-		f += ddF_x;
+		ddF_x   += 2;
+		f       += ddF_x;
 
 		if (corner & ssd1306_circle_quarter_bot_Left)
 		{
@@ -1221,21 +1488,28 @@ void ssd1306_Draw_Circle(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius, ssd130
 /******************************************************************************************/
 void ssd1306_Draw_Circle_Filled(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius, ssd1306_color_t color, ssd1306_circle_corners corner)
 {
-	int16_t f = 1 - radius;
-	int16_t ddF_x = 1;
-	int16_t ddF_y = -2 * radius;
-	int16_t x = 0;
-	int16_t y = radius;
+	int16_t f       = 1 - radius;
+	int16_t ddF_x   = 1;
+	int16_t ddF_y   = -2 * radius;
+	int16_t x       = 0;
+	int16_t y       = radius;
 
-	if ((corner & ssd1306_circle_half_hor_top))
-	    ssd1306_Draw_Line_V(x_Pos, y_Pos - radius, radius, color);
-
-	if ((corner & ssd1306_circle_half_ver_right)) ssd1306_Draw_Line_H(x_Pos, y_Pos, radius, color);
-
+    if ((corner & ssd1306_circle_half_hor_top))
+    {
+        ssd1306_Draw_Line_V(x_Pos, y_Pos - radius, radius, color);
+    }
+    if ((corner & ssd1306_circle_half_ver_right))
+    {
+        ssd1306_Draw_Line_H(x_Pos, y_Pos, radius, color);
+    }
 	if ((corner & ssd1306_circle_half_ver_left))
+	{
 	    ssd1306_Draw_Line_H(x_Pos - radius, y_Pos, radius, color);
-
-	if ((corner & ssd1306_circle_half_hor_bot)) ssd1306_Draw_Line_V(x_Pos, y_Pos, radius, color);
+	}
+	if ((corner & ssd1306_circle_half_hor_bot))
+	{
+        ssd1306_Draw_Line_V(x_Pos, y_Pos, radius, color);
+    }
 
 	while (x < y)
 	{
@@ -1246,8 +1520,8 @@ void ssd1306_Draw_Circle_Filled(uint16_t x_Pos, uint16_t y_Pos, uint16_t radius,
 			f += ddF_y;
 		}
 		x++;
-		ddF_x += 2;
-		f += ddF_x;
+		ddF_x   += 2;
+		f       += ddF_x;
 
 		if (corner & ssd1306_circle_quarter_bot_Left)
 		{

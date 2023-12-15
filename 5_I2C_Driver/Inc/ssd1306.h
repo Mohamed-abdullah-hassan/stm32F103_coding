@@ -14,19 +14,18 @@
 #define SSD1306_Display_Pages		SSD1306_Display_Height/8
 #define SSD1306_Display_Width		128
 
-enum ssd1306_color_pallet
+typedef enum
 {
 	ssd1306_color_Black = 0x00, ssd1306_color_White = 0xFF
-};
-typedef uint8_t ssd1306_color_t;
-enum ssd1306_pixel_operation
+}ssd1306_color_t;
+
+typedef enum //ssd1306_pixel_operation
 {
 	ssd1306_pixel_Set = 0x00, ssd1306_pixel_AND, ssd1306_pixel_OR, ssd1306_pixel_XOR
-};
+}ssd1306_pixel_op;
 
-typedef uint8_t ssd1306_pixel_op;
 
-enum ssd1306_circle_draw_quarters     // To define which quarter of the circle to draw
+typedef enum //ssd1306 Circle Draw quarters To define which quarter of the circle to draw
 {
 	ssd1306_circle_quarter_top_left  = 0x01,		// Draw only the upper left Quarter
 	ssd1306_circle_quarter_top_right = 0x02,		// Draw only the upper Right Quarter
@@ -37,9 +36,9 @@ enum ssd1306_circle_draw_quarters     // To define which quarter of the circle t
 	ssd1306_circle_half_hor_top		 = 0x03,		// Draw only the Horizontal top Half
 	ssd1306_circle_half_hor_bot		 = 0x0C,		// Draw only the Horizontal Bottom Half
 	ssd1306_circle_full 			 = 0xFF,		// Draw Full circle
-};
+}ssd1306_circle_corners;
 
-typedef uint8_t ssd1306_circle_corners;
+//typedef uint8_t ssd1306_circle_corners;
 
 
 typedef struct
@@ -52,14 +51,7 @@ typedef struct
 //#define Frame_buffer	ssd1306_Frame
 #define check_buffer_size	256
 
-//typedef struct
-//{
-//	uint8_t buffer0[check_buffer_size];
-//	uint8_t Frame[SSD1306_Display_Pages * SSD1306_Display_Width];
-//	uint8_t buffer1[check_buffer_size];
-//} ssd1306_buffer;
-//
-//ssd1306_buffer my_Frame;
+
 
 void ssd1306_I2C_Init( );
 

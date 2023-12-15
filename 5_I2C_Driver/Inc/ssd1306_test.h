@@ -18,6 +18,7 @@ void ssd1306_Test_Draw_Line_H_3(void);
 void ssd1306_Test_Draw_Line_V_1(void);
 void ssd1306_Test_Draw_Line_V_2(void);
 void ssd1306_Test_Draw_Line_V_1_1(void);
+void ssd1306_Test_Lines_2();
 void ssd1306_Test_Lines();
 void ssd1306_Test_Rect();
 void ssd1306_Test_Filled_Rect();
