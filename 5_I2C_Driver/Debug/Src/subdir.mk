@@ -51,13 +51,13 @@ C_DEPS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-Src/%.o Src/%.su: ../Src/%.c Src/subdir.mk
-	arm-none-eabi-gcc "$<" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DSTM32 -DSTM32F1 -DSTM32F103C8Tx -c -I../mcal -I../Inc -I"F:/MyWork/Code/STM32/RTOS_I/CUBE_IDE/5_I2C_Driver/Chip_Headers/core" -I"F:/MyWork/Code/STM32/RTOS_I/CUBE_IDE/5_I2C_Driver/Chip_Headers/mcu" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfloat-abi=soft -mthumb -o "$@"
+Src/%.o Src/%.su Src/%.cyclo: ../Src/%.c Src/subdir.mk
+	arm-none-eabi-gcc "$<" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DSTM32 -DSTM32F1 -DSTM32F103C8Tx -c -I../mcal -I../Inc -I"F:/MyWork/Code/STM32/RTOS_I/CUBE_IDE/5_I2C_Driver/Chip_Headers/core" -I"F:/MyWork/Code/STM32/RTOS_I/CUBE_IDE/5_I2C_Driver/Chip_Headers/mcu" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfloat-abi=soft -mthumb -o "$@"
 
 clean: clean-Src
 
 clean-Src:
-	-$(RM) ./Src/I2C.d ./Src/I2C.o ./Src/I2C.su ./Src/LED.d ./Src/LED.o ./Src/LED.su ./Src/font.d ./Src/font.o ./Src/font.su ./Src/gpio.d ./Src/gpio.o ./Src/gpio.su ./Src/hmc3883l.d ./Src/hmc3883l.o ./Src/hmc3883l.su ./Src/main.d ./Src/main.o ./Src/main.su ./Src/ssd1306.d ./Src/ssd1306.o ./Src/ssd1306.su ./Src/ssd1306_test.d ./Src/ssd1306_test.o ./Src/ssd1306_test.su ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/system.d ./Src/system.o ./Src/system.su ./Src/time.d ./Src/time.o ./Src/time.su ./Src/uart.d ./Src/uart.o ./Src/uart.su
+	-$(RM) ./Src/I2C.cyclo ./Src/I2C.d ./Src/I2C.o ./Src/I2C.su ./Src/LED.cyclo ./Src/LED.d ./Src/LED.o ./Src/LED.su ./Src/font.cyclo ./Src/font.d ./Src/font.o ./Src/font.su ./Src/gpio.cyclo ./Src/gpio.d ./Src/gpio.o ./Src/gpio.su ./Src/hmc3883l.cyclo ./Src/hmc3883l.d ./Src/hmc3883l.o ./Src/hmc3883l.su ./Src/main.cyclo ./Src/main.d ./Src/main.o ./Src/main.su ./Src/ssd1306.cyclo ./Src/ssd1306.d ./Src/ssd1306.o ./Src/ssd1306.su ./Src/ssd1306_test.cyclo ./Src/ssd1306_test.d ./Src/ssd1306_test.o ./Src/ssd1306_test.su ./Src/syscalls.cyclo ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.cyclo ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/system.cyclo ./Src/system.d ./Src/system.o ./Src/system.su ./Src/time.cyclo ./Src/time.d ./Src/time.o ./Src/time.su ./Src/uart.cyclo ./Src/uart.d ./Src/uart.o ./Src/uart.su
 
 .PHONY: clean-Src
 
